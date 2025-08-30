@@ -56,7 +56,7 @@ export default function Testimonials() {
     </section>
   );
 }
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function TestimonialCard({ t }: { t: any }) {
   const [likes, setLikes] = useState(t.likes);
   const [dislikes, setDislikes] = useState(t.dislikes);
@@ -65,22 +65,22 @@ function TestimonialCard({ t }: { t: any }) {
   const handleLike = () => {
     if (vote === "like") {
       setVote("none");
-      setLikes((c) => c - 1);
+      setLikes((c:number) => c - 1);
     } else {
-      if (vote === "dislike") setDislikes((c) => c - 1);
+      if (vote === "dislike") setDislikes((c: number) => c - 1);
       setVote("like");
-      setLikes((c) => c + 1);
+      setLikes((c: number) => c + 1);
     }
   };
 
   const handleDislike = () => {
     if (vote === "dislike") {
       setVote("none");
-      setDislikes((c) => c - 1);
+      setDislikes((c: number) => c - 1);
     } else {
-      if (vote === "like") setLikes((c) => c - 1);
+      if (vote === "like") setLikes((c:number) => c - 1);
       setVote("dislike");
-      setDislikes((c) => c + 1);
+      setDislikes((c: number) => c + 1);
     }
   };
 
