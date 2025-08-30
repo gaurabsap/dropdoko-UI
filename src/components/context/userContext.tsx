@@ -40,6 +40,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(meRes.data.user);
 
       toast.success(`Welcome ${meRes.data.user.email}!`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
       toast.error(err.response?.data?.message || "Invalid credentials");
@@ -67,6 +68,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const res = await api.post("/auth/signup", data);
       toast.success("Signup successful 🎉 Please login.");
       console.log("Signed up:", res.data);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
       toast.error(err.response?.data?.message || "Signup failed");

@@ -190,7 +190,7 @@ export default function Navbar() {
                     onClick={() => setMenuOpen(!menuOpen)}
                   >
                     <Image
-                      src={user.profile}
+                      src={user.profile || "./dokoo.png" }
                       alt={user.name}
                       width={32}
                       height={32}
