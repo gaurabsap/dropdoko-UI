@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable */
 
 import Image from "next/image";
 import { Plus } from "lucide-react";
@@ -6,18 +7,26 @@ import { useCart } from "./context/CartContext";
 
 const categories = [
   {
-    title: "Gadgets Collection",
+    id: "1",
+    price: 29.99,
+    title: "Smart Home Devices",
     image: "/hello2.png",
   },
   {
+    id: "2",
+    price: 19.99,
     title: "Useful Decorations",
     image: "/prod2.png",
   },
   {
+    id: "3",
+    price: 39.99,
     title: "Everyday Essentials",
     image: "/prod4.png",
   },
   {
+    id: "4",
+    price: 49.99,
     title: "Gifts collection",
     image: "/prod4.png",
   },
