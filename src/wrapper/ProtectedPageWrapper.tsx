@@ -11,13 +11,14 @@ export default function ProtectedPageWrapper({ children }: Props) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const protectedPrefixes = ["/profile", "/dashboard", "/orders", "/admin"];
+  // const protectedPrefixes = ["/profile", "/dashboard", "/orders", "/admin"];
+  const protectedPrefixes = ["/name"];
 
   useEffect(() => {
     if (!loading) {
       const isProtected = protectedPrefixes.some(prefix => pathname.startsWith(prefix));
       if (isProtected && !user) {
-        router.replace("/"); // redirect immediately
+        router.replace("/");
       }
     }
   }, [pathname, router, user, loading]);

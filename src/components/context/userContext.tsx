@@ -1,7 +1,9 @@
 "use client";
 
+/* eslint-disable */
+
 import { useEffect, useState, createContext, useContext, ReactNode } from "react";
-import api from "@/libs/axiosClient";
+import api from "@/tools/axiosClient";
 import { toast } from "react-toastify";
 
 type User = {
@@ -9,14 +11,16 @@ type User = {
   name: string;
   email: string;
   profile?: string;
+  role?: string;
 };
 
 type UserContextType = {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
   loading: boolean;
-  logout: () => void;
-  signup?: (data: { name: string; email: string; password: string }) => Promise<void>;
+  isAdmin: boolean;
+  logout: () => Promise<void>;
+  signup: (data: { name: string; email: string; password: string }) => Promise<boolean>;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -24,75 +28,106 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // ----------------- LOGIN -----------------
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const res = await api.post("/auth/login", { email, password });
-
       const { accessToken } = res.data.data;
+      
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", accessToken);
       }
 
       // Fetch user info immediately after login
       const meRes = await api.get("/auth/me");
-      setUser(meRes.data.user);
+      const userData = meRes.data.user;
+      
+      if (userData.role === 'admin') {
+        setIsAdmin(true);
+        setUser(null);
+        localStorage.removeItem("accessToken");
+        toast.error("Admin accounts must use the admin portal");
+        return false;
+      }
+      
+      setUser(userData);
+      setIsAdmin(false);
+      toast.success(`Welcome ${userData.name || userData.email}!`);
+      return true;
 
-      toast.success(`Welcome ${meRes.data.user.email}!`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Invalid credentials");
+      console.error("Login error:", err);
+      const errorMessage = err.response?.data?.message || "Invalid credentials";
+      toast.error(errorMessage);
+      return false;
     }
   };
 
   // ----------------- LOGOUT -----------------
   const logout = async () => {
-    const res = await api.post("/auth/logout")
-    if (res.status !== 200) {
-      toast.error("Logout failed");
-      return;
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.error("Logout API error:", err);
+      // Continue with client-side logout even if API call fails
+    } finally {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
+      }
+      setUser(null);
+      setIsAdmin(false);
+      toast.info("Logged out successfully");
     }
-
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("accessToken");
-    }
-    setUser(null);
-    toast.info("Logged out");
   };
 
-  // ----------------- SIGNUP (OPTIONAL) -----------------
-  const signup = async (data: { name: string; email: string; password: string }) => {
+  // ----------------- SIGNUP -----------------
+  const signup = async (data: { name: string; email: string; password: string }): Promise<boolean> => {
     try {
-      const res = await api.post("/auth/signup", data);
-      toast.success("Signup successful 🎉 Please login.");
-      console.log("Signed up:", res.data);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await api.post("/auth/signup", data);
+      toast.success("Signup successful! Please login.");
+      return true;
     } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Signup failed");
+      console.error("Signup error:", err);
+      const errorMessage = err.response?.data?.message || "Signup failed";
+      toast.error(errorMessage);
+      return false;
     }
   };
 
   // ----------------- INIT AUTH ON RELOAD -----------------
   useEffect(() => {
     const initAuth = async () => {
-      if (typeof window === "undefined") return;
+      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+      
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
       try {
-        const refreshRes = await api.post("/auth/refresh", {}, { withCredentials: true });
-        const { accessToken } = refreshRes.data;
-        localStorage.setItem("accessToken", accessToken);
-
-        // Now fetch current user
+        // Verify token is still valid
         const res = await api.get("/auth/me");
-        setUser(res.data.user);
+        const userData = res.data.user;
+        
+        if (userData.role === 'admin') {
+          setIsAdmin(true);
+          setUser(null);
+          localStorage.removeItem("accessToken");
+          toast.info("Admin session ended. Please use admin portal.");
+        } else {
+          setUser(userData);
+          setIsAdmin(false);
+        }
       } catch (err) {
         console.error("Auth init failed:", err);
+        // Token is invalid, clear it
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("accessToken");
+        }
         setUser(null);
-        localStorage.removeItem("accessToken");
+        setIsAdmin(false);
       } finally {
         setLoading(false);
       }
@@ -101,10 +136,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     initAuth();
   }, []);
 
-//   if (loading) return <div>Loading...</div>;
-
   return (
-    <UserContext.Provider value={{ user, login, loading, logout, signup }}>
+    <UserContext.Provider value={{ user, login, loading, isAdmin, logout, signup }}>
       {children}
     </UserContext.Provider>
   );

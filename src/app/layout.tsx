@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
 import Providers from "@/components/context/Provider";
-import ProtectedPageWrapper from "@/wrapper/ProtectedPageWrapper";
+import RootLayoutClient from "./RootLayoutClient";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -21,24 +20,19 @@ export const metadata: Metadata = {
   icons: {
     icon: "./favi.ico",
   },
-  
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-        <Navbar/>
-        <ProtectedPageWrapper>{children}</ProtectedPageWrapper>
+          <RootLayoutClient>{children}</RootLayoutClient>
         </Providers>
-        <Footer/>
       </body>
     </html>
   );

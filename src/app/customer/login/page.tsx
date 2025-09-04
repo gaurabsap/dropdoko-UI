@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
 import { useUser } from "@/components/context/userContext";
-import api from "@/libs/axiosClient";
+import api from "@/tools/axiosClient";
 import { useRouter } from "next/navigation";  // ⬅️ add this at top
 
 export default function AuthPage() {
@@ -196,7 +196,7 @@ export default function AuthPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.4 }}
-                className="w-[85%]"
+                className="w-[85%] pl-5 pr-[-10px]"
               >
                 <h2 className="text-2xl font-bold text-orange-600 mb-4 text-center">
                   Sign Up

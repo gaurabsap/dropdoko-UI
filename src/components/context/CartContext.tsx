@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
-import axiosClient from "@/libs/axiosClient"; 
+import axiosClient from "@/tools/axiosClient"; 
 import { toast } from "react-toastify";
 
 type CartItem = {
@@ -26,6 +26,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   const addToCart = async (item: CartItem) => {
+    // ✅ Always update local cart immediately
     setCart((prev) =>
       prev.find((i) => i.id === item.id)
         ? prev.map((i) =>
@@ -34,14 +35,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
         : [...prev, { ...item, quantity: 1 }]
     );
 
+    // Try syncing with backend, but don’t undo local update if it fails
     try {
       await axiosClient.post("/cart", item);
       toast.success(`${item.name} added to cart 🛒`);
     } catch (err) {
-      console.error("Failed to add to cart:", err);
-      toast.error("Failed to add item to cart ");
+      console.error("❌ Failed to sync cart with API:", err);
+      toast.error("Item added locally, but failed to sync with server");
     }
   };
+
 
   const removeFromCart = async (id: string) => {
     setCart((prev) => prev.filter((i) => i.id !== id));
@@ -62,8 +65,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       await axiosClient.delete("/cart");
       toast.info("Cart cleared");
     } catch (err) {
-      console.error("❌ Failed to clear cart:", err);
-      toast.error("Failed to clear cart ❌");
+      console.error("Failed to clear cart:", err);
+      toast.error("Failed to clear cart");
     }
   };
 

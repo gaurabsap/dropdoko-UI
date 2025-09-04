@@ -15,6 +15,7 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import { NavLink } from "./nav-link";
 import { useUser } from "@/components/context/userContext";
+import { useCart } from "./context/CartContext";
 
 // Define cart item type
 interface CartItem {
@@ -26,15 +27,15 @@ interface CartItem {
 }
 
 export default function Navbar() {
-  const [cartCount, setCartCount] = useState(3);
+  const [cartCount, setCartCount] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const { user, logout } = useUser(); // 👈 assuming logout exists in context
+  const { user, logout, isAdmin } = useUser(); // 👈 assuming logout exists in context
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-
+  const { cart } = useCart();
   // Close menu when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -115,6 +116,7 @@ export default function Navbar() {
   const links = [
     { name: "Home", href: "/" },
     { name: "Help & Support", href: "/help-support" },
+     ...(isAdmin ? [{ name: "Admin", href: "/admin" }] : []),
   ];
 
   return (
@@ -172,7 +174,11 @@ export default function Navbar() {
               onClick={() => setCartOpen(true)}
             >
               <ShoppingCart className="h-5 w-5" />
-              <span className="hidden lg:block text-sm">Cart</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 !bg-orange-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   {cartCount}
@@ -190,7 +196,7 @@ export default function Navbar() {
                     onClick={() => setMenuOpen(!menuOpen)}
                   >
                     <Image
-                      src={user.profile || "./dokoo.png" }
+                      src={user.profile || "./dokoo.png"}
                       alt={user.name}
                       width={32}
                       height={32}
@@ -201,7 +207,7 @@ export default function Navbar() {
                   {menuOpen && (
                     <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-md py-2 z-50">
                       <Link
-                        href="/profile"
+                        href="/customer/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setMenuOpen(false)}
                       >
@@ -220,8 +226,11 @@ export default function Navbar() {
                   )}
                 </div>
               ) : (
-                <Link href="/login">
-                  <Button variant="outline" className="h-8 px-4 text-sm !cursor-pointer">
+                <Link href="customer/login">
+                  <Button
+                    variant="outline"
+                    className="h-8 px-4 text-sm !cursor-pointer"
+                  >
                     Login
                   </Button>
                 </Link>
