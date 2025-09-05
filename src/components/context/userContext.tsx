@@ -35,15 +35,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       const res = await api.post("/auth/login", { email, password });
       const { accessToken } = res.data.data;
-      
+
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", accessToken);
       }
 
-      // Fetch user info immediately after login
       const meRes = await api.get("/auth/me");
       const userData = meRes.data.user;
-      
+
       if (userData.role === 'admin') {
         setIsAdmin(true);
         setUser(null);
@@ -51,7 +50,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         toast.error("Admin accounts must use the admin portal");
         return false;
       }
-      
+
       setUser(userData);
       setIsAdmin(false);
       toast.success(`Welcome ${userData.name || userData.email}!`);
@@ -61,7 +60,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       console.error("Login error:", err);
       const errorMessage = err.response?.data?.error || "Invalid credentials";
       toast.error(errorMessage);
-      return false;
+      return false; // Just return false, don't throw
     }
   };
 
