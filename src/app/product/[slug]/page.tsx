@@ -32,7 +32,7 @@ export async function generateStaticParams() {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug } = params;
 
   if (!slug || slug.toLowerCase() === "favicon.ico") {
     return <div className="text-center py-20 text-gray-500">Product not found.</div>;
