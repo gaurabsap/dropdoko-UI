@@ -2,7 +2,7 @@
 import axios from "axios";
 
 let isRefreshing = false;
-const baseURL = "http://localhost:5000/api/v1";
+const baseURL = process.env.SERVER_URL || "http://localhost:5000/api/v1";
 let failedQueue: {
   resolve: (value?: unknown) => void;
   reject: (err: any) => void;
@@ -24,7 +24,7 @@ const api = axios.create({
   baseURL: baseURL,
   headers: {
     "Content-Type": "application/json",
-    "X-SUZUNE-TOKEN": "ehfhy79akeidhm235lpxhapl",
+    "X-SUZUNE-TOKEN": process.env.SUZUNE_TOKEN || "",
   },
   withCredentials: true,
   timeout: 10000, // Add a 10-second timeout
