@@ -59,7 +59,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     } catch (err: any) {
       console.error("Login error:", err);
-      const errorMessage = err.response?.data?.message || "Invalid credentials";
+      const errorMessage = err.response?.data?.error || "Invalid credentials";
       toast.error(errorMessage);
       return false;
     }

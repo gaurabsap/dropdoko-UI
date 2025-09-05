@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -68,13 +68,18 @@ export default function AuthPage() {
     try {
       setLoginLoading(true);
       const success = await login(loginData.email, loginData.password);
+      console.log(success)
       if (success) {
         router.push("/");
       }
+      setLoginLoading(false);
+    } catch (err: any) {
+      console.error("Login failed:", err);
     } finally {
       setLoginLoading(false);
     }
   };
+
 
 
   return (

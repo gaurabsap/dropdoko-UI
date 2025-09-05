@@ -226,7 +226,7 @@ export default function Navbar() {
                   )}
                 </div>
               ) : (
-                <Link href="customer/login">
+                <Link href="/customer/login">
                   <Button
                     variant="outline"
                     className="h-8 px-4 text-sm !cursor-pointer"
