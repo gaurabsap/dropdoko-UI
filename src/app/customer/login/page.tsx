@@ -67,12 +67,15 @@ export default function AuthPage() {
 
     try {
       setLoginLoading(true);
-      await login(loginData.email, loginData.password);
-      router.push("/");
+      const success = await login(loginData.email, loginData.password);
+      if (success) {
+        router.push("/");
+      }
     } finally {
       setLoginLoading(false);
     }
   };
+
 
   return (
     <div className="flex items-center justify-center py-16">
