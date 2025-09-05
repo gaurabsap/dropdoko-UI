@@ -2,15 +2,15 @@
 import Image from "next/image";
 import AddToCartButton from "@/components/AddToCartButton";
 import api from "@/tools/axiosClient";
-import ProductGallery from "@/components/ProductGallery"; // client component for gallery
+import ProductGallery from "@/components/ProductGallery"; // client component
 
 interface Product {
   id: string;
   name: string;
   price: number;
   description: string;
-  features: string[];
-  specifications: string[];
+  features?: string[];
+  specifications?: string[];
   images: { url: string }[];
   slug: string;
   rating?: number;
@@ -22,6 +22,7 @@ interface ProductPageProps {
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
+// Generate static params for dynamic routes
 export async function generateStaticParams() {
   try {
     const res = await api.get("/products/list");
@@ -32,9 +33,11 @@ export async function generateStaticParams() {
   }
 }
 
+// Default export: async React component
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = params;
 
+  // Validate slug
   if (!slug || slug.toLowerCase() === "favicon.ico") {
     return <div className="text-center py-20 text-gray-500">Product not found.</div>;
   }
@@ -42,7 +45,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   let product: Product | null = null;
   try {
     const res = await api.get(`/products/slug/${encodeURIComponent(slug)}`);
-    product = res.data.data;
+    product = res.data?.data ?? null;
   } catch {
     return <div className="text-center py-20 text-gray-500">Product not found.</div>;
   }
@@ -70,11 +73,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
           {product.rating && (
             <div className="flex items-center gap-2">
-              <p className="text-yellow-500">
-                {"★".repeat(Math.floor(product.rating))}
-              </p>
+              <p className="text-yellow-500">{"★".repeat(Math.floor(product.rating))}</p>
               <span className="text-gray-400 text-sm">
-                ({product.reviews?.length || 0} ratings)
+                ({product.reviews?.length ?? 0} ratings)
               </span>
             </div>
           )}
@@ -99,22 +100,30 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         <h2 className="text-2xl font-bold text-orange-500 mb-4">Product description</h2>
         <p className="text-gray-700 mb-6">{product.description}</p>
 
-        <h2 className="text-2xl font-bold text-orange-500 mb-2">Key Features</h2>
-        <ul className="list-disc pl-6 text-gray-700 mb-6">
-          {product.features?.map((f, i) => (
-            <li key={i}>{f}</li>
-          ))}
-        </ul>
+        {product.features && product.features.length > 0 && (
+          <>
+            <h2 className="text-2xl font-bold text-orange-500 mb-2">Key Features</h2>
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              {product.features.map((f, i) => (
+                <li key={i}>{f}</li>
+              ))}
+            </ul>
+          </>
+        )}
 
-        <h2 className="text-2xl font-bold text-orange-500 mb-2">Technical Specifications</h2>
-        <ul className="list-disc pl-6 text-gray-700 mb-6">
-          {product.specifications?.map((spec, i) => (
-            <li key={i}>{spec}</li>
-          ))}
-        </ul>
+        {product.specifications && product.specifications.length > 0 && (
+          <>
+            <h2 className="text-2xl font-bold text-orange-500 mb-2">Technical Specifications</h2>
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              {product.specifications.map((spec, i) => (
+                <li key={i}>{spec}</li>
+              ))}
+            </ul>
+          </>
+        )}
 
         <h2 className="text-2xl font-bold text-orange-500 mb-2">Customer Reviews</h2>
-        {product.reviews?.length ? (
+        {product.reviews && product.reviews.length > 0 ? (
           <ul className="space-y-4">
             {product.reviews.map((rev, i) => (
               <li key={i} className="border-b pb-2">
