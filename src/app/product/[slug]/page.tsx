@@ -3,6 +3,7 @@ import Image from "next/image";
 import AddToCartButton from "@/components/AddToCartButton";
 import api from "@/tools/axiosClient";
 import ProductGallery from "@/components/ProductGallery"; // client component for gallery
+import PageProps  from "next/app"; 
 
 interface Product {
   id: string;
@@ -31,7 +32,7 @@ export async function generateStaticParams() {
   }
 }
 
-export default async function ProductDetailPage({ params }: Props) {
+export default async function ProductDetailPage({ params }: PageProps & Props) {
   const { slug } = params;
 
   if (!slug || slug.toLowerCase() === "favicon.ico") {
