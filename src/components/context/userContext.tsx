@@ -1,7 +1,4 @@
-// "use client";
-
 /* eslint-disable */
-
 import { useEffect, useState, createContext, useContext, ReactNode } from "react";
 import api from "@/tools/axiosClient";
 import { toast } from "react-toastify";
@@ -34,20 +31,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // ----------------- LOGIN -----------------
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const res = await api.post("/auth/login", { email, password });
-      const { accessToken } = res.data.data;
+      await api.post("/auth/login", { email, password });
 
-      if (typeof window !== "undefined") {
-        localStorage.setItem("accessToken", accessToken);
-      }
-
+      // Get current user info
       const meRes = await api.get("/auth/me");
       const userData = meRes.data.user;
 
       if (userData.role === 'admin') {
         setIsAdmin(true);
         setUser(null);
-        localStorage.removeItem("accessToken");
         toast.error("Admin accounts must use the admin portal");
         return false;
       }
@@ -61,26 +53,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       console.error("Login error:", err);
       const errorMessage = err.response?.data?.error || "Invalid credentials";
       toast.error(errorMessage);
-      return false; // Just return false, don't throw
+      return false;
     }
   };
 
-
   // ----------------- GOOGLE LOGIN -----------------
   const googleLogin = () => {
-    const baseURL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000/api/v1";
-  const isProd = process.env.NODE_ENV === "production";
-
-  let googleAuthUrl = `${baseURL}/auth/google`;
-
-  // Add Suzune token ONLY in production
-  if (isProd) {
-    googleAuthUrl += `?x-suzune-token=${encodeURIComponent(process.env.NEXT_PUBLIC_SUZUNE_TOKEN || "")}`;
-  }
-  window.location.href = googleAuthUrl;
-    // window.location.href = `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000/api/v1"}/auth/google`;
+    window.location.href = `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000/api/v1"}/auth/google`;
   };
-
 
   // ----------------- LOGOUT -----------------
   const logout = async () => {
@@ -88,11 +68,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       await api.post("/auth/logout");
     } catch (err) {
       console.error("Logout API error:", err);
-      // Continue with client-side logout even if API call fails
     } finally {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("accessToken");
-      }
       setUser(null);
       setIsAdmin(false);
       toast.info("Logged out successfully");
@@ -116,22 +92,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // ----------------- INIT AUTH ON RELOAD -----------------
   useEffect(() => {
     const initAuth = async () => {
-      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-      
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        // Verify token is still valid
         const res = await api.get("/auth/me");
         const userData = res.data.user;
-        
+
         if (userData.role === 'admin') {
           setIsAdmin(true);
           setUser(null);
-          localStorage.removeItem("accessToken");
           toast.info("Admin session ended. Please use admin portal.");
         } else {
           setUser(userData);
@@ -139,10 +106,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
       } catch (err) {
         console.error("Auth init failed:", err);
-        // Token is invalid, clear it
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("accessToken");
-        }
         setUser(null);
         setIsAdmin(false);
       } finally {
