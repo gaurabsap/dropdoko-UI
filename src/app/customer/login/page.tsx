@@ -29,11 +29,18 @@ export default function AuthPage() {
     password: "",
   });
 
-  const { login } = useUser();
+  const { login, googleLogin  } = useUser();
 
   // Loading states
   const [loginLoading, setLoginLoading] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
+
+
+  // --- Google Login handler ---
+  const handleGoogleLogin = () => {
+    googleLogin();
+  }
+
 
   // --- Signup handler ---
   const handleSignup = async () => {
@@ -173,7 +180,7 @@ export default function AuthPage() {
                     "Login"
                   )}
                 </button>
-                <button className="w-full border border-gray-300 py-2 rounded-full mt-4 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+                <button onClick={handleGoogleLogin} className="w-full border border-gray-300 py-2 rounded-full mt-4 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
                   <Image
                     src="/google.png"
                     alt="Google Icon"

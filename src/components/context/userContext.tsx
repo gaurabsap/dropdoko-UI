@@ -21,6 +21,7 @@ type UserContextType = {
   isAdmin: boolean;
   logout: () => Promise<void>;
   signup: (data: { name: string; email: string; password: string }) => Promise<boolean>;
+  googleLogin: () => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -63,6 +64,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return false; // Just return false, don't throw
     }
   };
+
+
+  // ----------------- GOOGLE LOGIN -----------------
+  const googleLogin = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000/api/v1"}/auth/google`;
+  };
+
 
   // ----------------- LOGOUT -----------------
   const logout = async () => {
@@ -136,7 +144,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, login, loading, isAdmin, logout, signup }}>
+    <UserContext.Provider value={{ user, login, loading, isAdmin, logout, signup, googleLogin }}>
       {children}
     </UserContext.Provider>
   );
