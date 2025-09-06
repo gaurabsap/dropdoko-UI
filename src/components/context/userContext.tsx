@@ -68,7 +68,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // ----------------- GOOGLE LOGIN -----------------
   const googleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000/api/v1"}/auth/google`;
+    const baseURL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000/api/v1";
+  const isProd = process.env.NODE_ENV === "production";
+
+  let googleAuthUrl = `${baseURL}/auth/google`;
+
+  // Add Suzune token ONLY in production
+  if (isProd) {
+    googleAuthUrl += `?x-suzune-token=${encodeURIComponent(process.env.NEXT_PUBLIC_SUZUNE_TOKEN || "")}`;
+  }
+  window.location.href = googleAuthUrl;
+    // window.location.href = `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000/api/v1"}/auth/google`;
   };
 
 
