@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -48,37 +47,49 @@ export default function ShippingAddressListPage() {
     }
   };
 
-if (loading) {
+  // Skeleton card component
+  const SkeletonCard = () => (
+    <div className="relative border border-orange-200 bg-white p-5 rounded-2xl shadow-lg flex justify-between animate-pulse">
+      <div className="space-y-2 flex-1">
+        <div className="w-40 h-5 bg-gray-300 rounded"></div>
+        <div className="w-32 h-4 bg-gray-200 rounded"></div>
+        <div className="w-48 h-4 bg-gray-200 rounded"></div>
+        <div className="w-36 h-4 bg-gray-200 rounded"></div>
+      </div>
+      <div className="flex flex-col items-end space-y-2">
+        <div className="w-20 h-5 bg-gray-300 rounded"></div> {/* Default badge */}
+        <div className="flex space-x-2 mt-2">
+          <div className="w-12 h-6 bg-gray-300 rounded"></div> {/* Edit */}
+          <div className="w-12 h-6 bg-gray-300 rounded"></div> {/* Delete */}
+        </div>
+      </div>
+    </div>
+  );
+
+  if (loading) {
     return (
-      <div className="min-h-screen p-6 bg-orange-50 flex flex-col items-center justify-start gap-5">
-        <h1 className="w-64 h-8 bg-gray-300 rounded animate-pulse mb-6"></h1>
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="w-full max-w-3xl h-32 bg-white rounded-2xl shadow-md p-5 flex justify-between animate-pulse"
-          >
-            <div className="space-y-2 flex-1">
-              <div className="w-40 h-5 bg-gray-300 rounded"></div>
-              <div className="w-32 h-4 bg-gray-200 rounded"></div>
-              <div className="w-48 h-4 bg-gray-200 rounded"></div>
-              <div className="w-36 h-4 bg-gray-200 rounded"></div>
-            </div>
-            <div className="flex flex-col space-y-2 items-end">
-              <div className="w-20 h-5 bg-gray-300 rounded"></div>
-              <div className="flex space-x-2 mt-2">
-                <div className="w-12 h-6 bg-gray-300 rounded"></div>
-                <div className="w-12 h-6 bg-gray-300 rounded"></div>
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="min-h-screen p-6 bg-orange-50 flex flex-col items-center gap-5">
+        {/* Skeleton for heading */}
+        <div className="w-64 h-8 bg-gray-300 rounded animate-pulse mb-6"></div>
+
+        {/* Skeleton cards */}
+        <div className="space-y-5 w-full max-w-3xl">
+          {[1, 2, 3].map((i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+
+        {/* Skeleton for add button */}
+        <div className="flex justify-center mt-8 w-full max-w-3xl">
+          <div className="w-48 h-12 bg-gray-300 rounded-full animate-pulse"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-orange-50">
-      <div className="max-w-3xl">
+    <div className="min-h-screen p-6 bg-orange-50">
+      <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-orange-700">
           Your Shipping Addresses
         </h1>
