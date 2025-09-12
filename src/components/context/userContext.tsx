@@ -49,7 +49,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       setUser(userData);
       setIsAdmin(false);
-      toast.success(`Welcome ${userData.name || userData.email}!`);
+      toast.success(`Welcome ${userData.fullName || userData.email}!`);
       return true;
 
     } catch (err: any) {

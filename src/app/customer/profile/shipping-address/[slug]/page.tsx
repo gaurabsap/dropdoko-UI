@@ -10,7 +10,7 @@ import api from "@/tools/axiosClient";
 export default function ShippingAddressPage() {
   const router = useRouter();
   const params = useParams();
-  const slug = params?.slug; // "create" or an ID
+  const slug = params?.slug;
   const isCreate = slug === "create";
 
   const [fullName, setFullName] = useState("");

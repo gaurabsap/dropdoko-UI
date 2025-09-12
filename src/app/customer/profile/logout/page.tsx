@@ -9,8 +9,12 @@ export default function LogoutPage() {
   const router = useRouter();
 
   useEffect(() => {
-    logout();
-    router.push("/customer/login");
+    const performLogout = async () => {
+      await logout();
+      router.push("/customer/login");
+    };
+
+    performLogout();
   }, [logout, router]);
 
   return <p>Logging out...</p>;
