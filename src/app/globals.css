@@ -17,6 +17,9 @@ body {
   height: 100% !important;
 }
 
+button{
+  cursor: pointer !important;
+}
 
 @theme inline {
   --color-background: var(--background);

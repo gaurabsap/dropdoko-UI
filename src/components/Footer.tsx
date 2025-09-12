@@ -57,7 +57,7 @@ export default function Footer() {
         <div>
           <h3 className="font-bold text-lg text-orange-600 mb-3">Connect With Us</h3>
           <p className="text-sm text-gray-700">dropdoko@gmail.com</p>
-          <p className="text-sm text-gray-700 mb-3">+977-XXXXXXXXXX</p>
+          <p className="text-sm text-gray-700 mb-3">+977 9845097315</p>
           
           <div className="flex space-x-4 mt-3">
             <Link href="#" className="text-orange-500 hover:text-orange-600">
@@ -75,7 +75,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="mt-10 border-t pt-5 text-center text-sm text-gray-600">
-        ©2025 ShopSmart. All rights reserved.
+        ©2025 DropDoko. All rights reserved.
       </div>
     </footer>
   );

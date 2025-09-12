@@ -4,6 +4,9 @@ import api from "@/tools/axiosClient";
 import { toast } from "react-toastify";
 
 type User = {
+  _id?: string;
+  fullName?: string;
+  phoneNumber?: string;
   id: string;
   name: string;
   email: string;
