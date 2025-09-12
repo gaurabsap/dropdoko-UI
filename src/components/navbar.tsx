@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -18,6 +17,7 @@ import { Button } from "./ui/button";
 import { NavLink } from "./nav-link";
 import { useUser } from "@/components/context/userContext";
 import { useCart } from "./context/CartContext";
+import api from "@/tools/axiosClient";
 
 // Define cart item type
 interface CartItem {
@@ -29,20 +29,34 @@ interface CartItem {
 }
 
 export default function Navbar() {
-  const [cartCount, setCartCount] = useState(0);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
-  const { user, logout, isAdmin } = useUser(); 
-
+  const [mobileOpen, setMobileOpen] = useState(false); // Mobile menu toggle
+  const [cartOpen, setCartOpen] = useState(false); // Cart sidebar toggle
+  const [isClosing, setIsClosing] = useState(false); // Cart closing animation
+  const { user, logout, isAdmin } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { cart } = useCart();
 
+  // Sample cart data
   const [cartItems, setCartItems] = useState<CartItem[]>([
-    { id: 1, name: "Wireless Headphones", price: 129.99, quantity: 1, image: "/1.png" },
-    { id: 2, name: "Smartphone Case", price: 24.99, quantity: 2, image: "/2.png" },
+    {
+      id: 1,
+      name: "Wireless Headphones",
+      price: 129.99,
+      quantity: 1,
+      image: "/1.png",
+    },
+    {
+      id: 2,
+      name: "Smartphone Case",
+      price: 24.99,
+      quantity: 2,
+      image: "/2.png",
+    },
   ]);
+
+  // Calculate total items in cart
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   const totalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -60,25 +74,28 @@ export default function Navbar() {
   const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;
     setCartItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item))
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      )
     );
   };
 
   const removeItem = (id: number) => {
-    const itemToRemove = cartItems.find((item) => item.id === id);
-    if (itemToRemove) setCartCount((prev) => prev - itemToRemove.quantity);
     setCartItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   useEffect(() => {
     if (cartOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "unset";
-    return () => { document.body.style.overflow = "unset"; };
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [cartOpen]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setMenuOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -95,49 +112,68 @@ export default function Navbar() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  useEffect(() => {
+useEffect(() => {
     const timer = setTimeout(() => {
       if (!searchTerm) {
         setSearchResults([]);
         setIsSearching(false);
         return;
       }
+
       setIsSearching(true);
 
-      fetch(`/api/search?query=${searchTerm}`)
-        .then((res) => res.json())
-        .then((data) => setSearchResults(data.results || []))
-        .catch(() => setSearchResults([]))
-        .finally(() => setIsSearching(false));
-    }, 500);
+      api.get(`/products/search?query=${searchTerm}`)
+        .then((res) => {
+          // Axios already parses JSON, use res.data
+          setSearchResults(res.data.data || []);
+        })
+        .catch(() => {
+          setSearchResults([]);
+        })
+        .finally(() => {
+          setIsSearching(false);
+        });
+    }, 500); // debounce 500ms
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timer); // cleanup previous timer
   }, [searchTerm]);
 
   return (
     <>
       <nav className="w-full border-b sticky top-0 z-40 !bg-[#F4EFEA]">
         <div className="relative flex items-center w-full h-14 px-4 md:px-10">
-          {/* Mobile menu button */}
-          <button className="md:hidden absolute left-4 p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden absolute left-4 p-2"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
 
-          {/* LEFT: logo + nav */}
+          {/* LEFT: logo + nav (Desktop only) */}
           <div className="flex-1 flex items-center justify-center gap-3 md:gap-6">
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <Image src="/logo.png" alt="Logo" width={35} height={35} className="cursor-pointer" />
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={35}
+                height={35}
+                className="cursor-pointer"
+              />
               <h1 className="font-bold text-base md:text-lg">Drop-doko</h1>
             </Link>
 
+            {/* Desktop Nav Links */}
             <div className="hidden md:block ml-2 md:ml-6 relative">
               <nav className="hidden lg:flex items-center ml-5 text-sm font-medium">
-                {links.map((link) => <NavLink key={link.name} href={link.href} label={link.name} />)}
+                {links.map((link) => (
+                  <NavLink key={link.name} href={link.href} label={link.name} />
+                ))}
               </nav>
             </div>
           </div>
 
-          {/* RIGHT: search + buttons */}
+          {/* RIGHT: Desktop search + buttons */}
           <div className="flex-1 hidden md:flex items-center justify-center gap-4">
             {/* Desktop Search */}
             <div className="relative w-full max-w-md">
@@ -149,7 +185,6 @@ export default function Navbar() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-
               {(isSearching || searchResults.length > 0 || searchTerm) && (
                 <div className="absolute mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto z-50 flex flex-col items-center">
                   {isSearching ? (
@@ -162,8 +197,9 @@ export default function Navbar() {
                         searchResults.map((item) => (
                           <Link
                             key={item.id}
-                            href={`/product/${item.id}`}
+                            href={`/product/${item.slug}`}
                             className="block px-4 py-2 w-full text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setSearchTerm('')} 
                           >
                             {item.name}
                           </Link>
@@ -177,7 +213,7 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Cart button */}
+            {/* Cart Button */}
             <Button
               variant="ghost"
               className="h-8 px-3 flex items-center gap-2 relative cursor-pointer transition-colors"
@@ -242,7 +278,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile dropdown */}
+        {/* Mobile Dropdown Menu */}
         {mobileOpen && (
           <div className="md:hidden flex flex-col gap-3 px-4 py-3 border-t bg-white animate-in slide-in-from-top duration-300">
             {/* Mobile Search */}
@@ -255,60 +291,44 @@ export default function Navbar() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-
-              {(isSearching || searchResults.length > 0 || searchTerm) && (
-                <div className="absolute mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto z-50 flex flex-col items-center">
-                  {isSearching ? (
-                    <div className="py-4">
-                      <div className="h-6 w-6 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>
-                    </div>
-                  ) : (
-                    <>
-                      {searchResults.length > 0 ? (
-                        searchResults.map((item) => (
-                          <Link
-                            key={item.id}
-                            href={`/product/${item.id}`}
-                            className="block px-4 py-2 w-full text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            {item.name}
-                          </Link>
-                        ))
-                      ) : (
-                        <p className="p-2 text-gray-500 text-sm text-center">No results found</p>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
             </div>
 
-            <Button
-              variant="ghost"
-              className="!cursor-pointer flex items-center gap-2 justify-start"
-              onClick={() => {
-                setMobileOpen(false);
-                setCartOpen(true);
-              }}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              <span className="text-sm">Cart ({cartCount})</span>
-            </Button>
+            {/* Mobile Links */}
+            <div className="flex flex-col gap-2 mt-3">
+              {links.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
+                >
+                  {link.name}
+                </Link>
+              ))}
 
-            <Link href="/login" className="flex items-center gap-2 justify-start">
-              <Button variant="ghost" className="w-full">
-                Login
-              </Button>
-            </Link>
+              {/* Cart link inside menu */}
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  setCartOpen(true);
+                }}
+                className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <span>Cart ({cartCount})</span>
+              </button>
+            </div>
           </div>
         )}
       </nav>
 
-      {/* Cart Sidebar (unchanged) */}
+      {/* Cart Sidebar */}
       {cartOpen && (
         <div className="fixed inset-0 z-50">
           <div
-            className={`absolute inset-0 bg-black/30 transition-opacity duration-300 ${isClosing ? "opacity-0" : "opacity-100"}`}
+            className={`absolute inset-0 bg-black/30 transition-opacity duration-300 ${
+              isClosing ? "opacity-0" : "opacity-100"
+            }`}
             onClick={handleCloseCart}
           ></div>
 
@@ -322,7 +342,10 @@ export default function Navbar() {
                 <h2 className="text-lg font-semibold">
                   Your Cart ({cartCount} items)
                 </h2>
-                <button onClick={handleCloseCart} className="p-1 rounded-full hover:bg-gray-100">
+                <button
+                  onClick={handleCloseCart}
+                  className="p-1 rounded-full hover:bg-gray-100"
+                >
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -332,31 +355,61 @@ export default function Navbar() {
                   <div className="flex flex-col items-center justify-center h-full text-gray-500">
                     <ShoppingCart className="h-16 w-16 mb-4 opacity-50" />
                     <p className="text-lg">Your cart is empty</p>
-                    <Button className="mt-4 bg-orange-500 hover:bg-orange-600" onClick={handleCloseCart}>
+                    <Button
+                      className="mt-4 bg-orange-500 hover:bg-orange-600"
+                      onClick={handleCloseCart}
+                    >
                       Continue Shopping
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {cartItems.map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 pb-4 border-b animate-in fade-in duration-300">
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-4 pb-4 border-b animate-in fade-in duration-300"
+                      >
                         <div className="relative h-16 w-16 overflow-hidden rounded-md bg-gray-100 flex-shrink-0">
-                          <Image src={item.image} alt={item.name} fill className="object-cover" />
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-medium truncate">{item.name}</h3>
-                          <p className="mt-1 text-sm font-medium">${item.price.toFixed(2)}</p>
+                          <h3 className="text-sm font-medium truncate">
+                            {item.name}
+                          </h3>
+                          <p className="mt-1 text-sm font-medium">
+                            ${item.price.toFixed(2)}
+                          </p>
                           <div className="flex items-center mt-2">
-                            <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1 rounded-md hover:bg-gray-100">
+                            <button
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity - 1)
+                              }
+                              className="p-1 rounded-md hover:bg-gray-100"
+                            >
                               <Minus className="h-3 w-3" />
                             </button>
-                            <span className="mx-2 text-sm w-6 text-center">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1 rounded-md hover:bg-gray-100">
+                            <span className="mx-2 text-sm w-6 text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity + 1)
+                              }
+                              className="p-1 rounded-md hover:bg-gray-100"
+                            >
                               <Plus className="h-3 w-3" />
                             </button>
                           </div>
                         </div>
-                        <button onClick={() => removeItem(item.id)} className="p-1 text-gray-400 hover:text-red-500 flex-shrink-0">
+                        <button
+                          onClick={() => removeItem(item.id)}
+                          className="p-1 text-gray-400 hover:text-red-500 flex-shrink-0"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -375,7 +428,10 @@ export default function Navbar() {
                     Proceed to Checkout
                   </Button>
                   <div className="mt-3 text-center">
-                    <button onClick={handleCloseCart} className="text-sm text-gray-500 hover:text-gray-700">
+                    <button
+                      onClick={handleCloseCart}
+                      className="text-sm text-gray-500 hover:text-gray-700"
+                    >
                       Continue Shopping
                     </button>
                   </div>
