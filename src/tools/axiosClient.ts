@@ -89,7 +89,7 @@ api.interceptors.response.use(
 
         // Redirect to login if refresh fails
         if (typeof window !== "undefined" && !originalRequest._isBackgroundRequest) {
-          window.location.href = "/login";
+          window.location.href = "/customer/login";
         }
 
         return Promise.reject(refreshErr);
