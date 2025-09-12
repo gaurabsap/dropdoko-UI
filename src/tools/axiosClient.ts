@@ -31,7 +31,20 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Request interceptor: no token manipulation needed
+// Silent refresh interval (refresh every 12 minutes)
+if (typeof window !== "undefined") {
+  setInterval(async () => {
+    try {
+      await api.post("/auth/refresh");
+      console.log("Access token refreshed silently");
+    } catch (err) {
+      console.log("Silent refresh failed, redirecting to login");
+      window.location.href = "/login";
+    }
+  }, 12 * 60 * 1000); // 12 minutes
+}
+
+// Request interceptor
 api.interceptors.request.use(
   (config) => config,
   (error) => Promise.reject(error)

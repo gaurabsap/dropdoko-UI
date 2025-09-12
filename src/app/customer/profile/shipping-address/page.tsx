@@ -90,7 +90,7 @@ export default function ShippingAddressListPage() {
   return (
     <div className="min-h-screen p-6 bg-orange-50">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-orange-700">
+        <h1 className="text-3xl text-center font-bold mb-6 text-orange-700">
           Your Shipping Addresses
         </h1>
 
