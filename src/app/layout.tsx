@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/context/Provider";
 import RootLayoutClient from "./RootLayoutClient";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,11 @@ export default function RootLayout({
         <Providers>
           <RootLayoutClient>{children}</RootLayoutClient>
         </Providers>
+        <Script
+          strategy="afterInteractive"
+          src="https://embed.tawk.to/68c54acd2d363c192cbad9ed/1j51aode3"
+          crossOrigin="anonymous"
+        />
       </body>
     </html>
   );
