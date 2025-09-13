@@ -145,7 +145,7 @@ export default function AuthPage() {
 
   return (
     <div className="flex items-center justify-center py-16">
-      <div className="relative w-[850px] h-[550px] rounded-2xl shadow-lg bg-white overflow-hidden">
+      <div className="relative w-[850px] h-[620px] rounded-2xl shadow-lg bg-white overflow-hidden">
         {/* Basket Image */}
         <motion.div
           animate={{ x: isLogin ? 0 : "100%" }}
@@ -232,7 +232,7 @@ export default function AuthPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.4 }}
-                className="pl-5 pt-10 pr-[-10px] overflow-visible min-h-[480px]"
+                className="pl-5 pr-[-10px] overflow-visible min-h-[480px]"
               >
                 <h2  className="text-2xl font-bold text-orange-600 mb-4 text-center">Sign Up</h2>
 
