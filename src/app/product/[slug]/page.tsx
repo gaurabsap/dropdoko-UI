@@ -18,6 +18,13 @@ interface Product {
   reviews?: { user: string; comment: string; rating: number }[];
 }
 
+interface ProductPageProps {
+  params: {
+    slug: string;
+  };
+}
+
+
 // pre-generate static params
 export async function generateStaticParams() {
   try {
@@ -30,11 +37,7 @@ export async function generateStaticParams() {
 }
 
 // ✅ App Router always passes params synchronously here
-export default async function ProductDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function ProductDetailPage({params}: ProductPageProps) {
   const slug = params.slug;
 
   if (!slug || slug.toLowerCase() === "favicon.ico") {
