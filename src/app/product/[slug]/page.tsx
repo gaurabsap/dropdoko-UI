@@ -35,7 +35,7 @@ export default async function ProductDetailPage({
 }: {
   params: { slug: string };
 }) {
-  const slug = await params.slug;
+  const slug = params.slug;
 
   if (!slug || slug.toLowerCase() === "favicon.ico") {
     return (
