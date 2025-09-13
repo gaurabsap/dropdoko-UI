@@ -2,7 +2,8 @@
 import Image from "next/image";
 import AddToCartButton from "@/components/AddToCartButton";
 import api from "@/tools/axiosClient";
-import ProductGallery from "@/components/ProductGallery"; // client component for gallery
+import ProductGallery from "@/components/ProductGallery";
+import Link from "next/link";
 
 interface Product {
   id: string;
@@ -17,6 +18,7 @@ interface Product {
   reviews?: { user: string; comment: string; rating: number }[];
 }
 
+// pre-generate static params
 export async function generateStaticParams() {
   try {
     const res = await api.get("/products/list");
@@ -27,15 +29,18 @@ export async function generateStaticParams() {
   }
 }
 
+// ✅ App Router always passes params synchronously here
 export default async function ProductDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }) {
-  const { slug } = await params;
+  const slug = await params.slug;
 
   if (!slug || slug.toLowerCase() === "favicon.ico") {
-    return <div className="text-center py-20 text-gray-500">Product not found.</div>;
+    return (
+      <div className="text-center py-20 text-gray-500">Product not found.</div>
+    );
   }
 
   let product: Product | null = null;
@@ -43,21 +48,28 @@ export default async function ProductDetailPage({
     const res = await api.get(`/products/slug/${encodeURIComponent(slug)}`);
     product = res.data.data;
   } catch {
-    return <div className="text-center py-20 text-gray-500">Product not found.</div>;
+    return (
+      <div className="text-center py-20 text-gray-500">Product not found.</div>
+    );
   }
 
   if (!product) {
-    return <div className="text-center py-20 text-gray-500">Product not found.</div>;
+    return (
+      <div className="text-center py-20 text-gray-500">Product not found.</div>
+    );
   }
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-4">
-        Home / <span className="text-gray-800">{product.name}</span>
+        <Link href="/" className="hover:underline text-gray-500">
+          Home
+        </Link>{" "}
+        / <span className="text-gray-800">{product.name}</span>
       </nav>
 
-      <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex flex-col md:flex-row">
         {/* Image gallery (client) */}
         <div className="md:w-1/2">
           <ProductGallery images={product.images} name={product.name} />
@@ -95,7 +107,9 @@ export default async function ProductDetailPage({
 
       {/* Product details */}
       <div className="mt-12">
-        <h2 className="text-2xl font-bold text-orange-500 mb-4">Product description</h2>
+        <h2 className="text-2xl font-bold text-orange-500 mb-4">
+          Product description
+        </h2>
         <p className="text-gray-700 mb-6">{product.description}</p>
 
         <h2 className="text-2xl font-bold text-orange-500 mb-2">Key Features</h2>
@@ -105,14 +119,18 @@ export default async function ProductDetailPage({
           ))}
         </ul>
 
-        <h2 className="text-2xl font-bold text-orange-500 mb-2">Technical Specifications</h2>
+        <h2 className="text-2xl font-bold text-orange-500 mb-2">
+          Technical Specifications
+        </h2>
         <ul className="list-disc pl-6 text-gray-700 mb-6">
           {product.specifications?.map((spec, i) => (
             <li key={i}>{spec}</li>
           ))}
         </ul>
 
-        <h2 className="text-2xl font-bold text-orange-500 mb-2">Customer Reviews</h2>
+        <h2 className="text-2xl font-bold text-orange-500 mb-2">
+          Customer Reviews
+        </h2>
         {product.reviews?.length ? (
           <ul className="space-y-4">
             {product.reviews.map((rev, i) => (

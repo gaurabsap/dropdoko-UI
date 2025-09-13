@@ -1,9 +1,10 @@
-// context/CartContext.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
-import axiosClient from "@/tools/axiosClient"; 
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import api from "@/tools/axiosClient";
 import { toast } from "react-toastify";
+import { useUser } from "../context/userContext";
 
 type CartItem = {
   id: string;
@@ -15,70 +16,102 @@ type CartItem = {
 
 type CartContextType = {
   cart: CartItem[];
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string) => void;
+  addToCart: (item: { id: string; name: string; price: number; imageUrl: string; quantity?: number }) => void;
+  removeFromCart: (productId: string) => void;
   clearCart: () => void;
+  cartCount: number;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { user } = useUser();
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const addToCart = async (item: CartItem) => {
-    // ✅ Always update local cart immediately
-    setCart((prev) =>
-      prev.find((i) => i.id === item.id)
-        ? prev.map((i) =>
-            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-          )
-        : [...prev, { ...item, quantity: 1 }]
-    );
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-    // Try syncing with backend, but don’t undo local update if it fails
+  // Fetch cart from backend
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!user) {
+        setCart([]);
+        return;
+      }
+      try {
+        const res = await api.get("/cart/getAll");
+        const items = res.data.data.items.map((item: any) => ({
+          id: item.product._id,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          imageUrl: item.product.images[0]?.url || "",
+        }));
+        setCart(items);
+      } catch (err) {
+        console.error("Failed to fetch cart", err);
+        setCart([]);
+      }
+    };
+
+    fetchCart();
+  }, [user]);
+
+  // Add or update quantity
+  const addToCart = async (item: { id: string; name: string; price: number; imageUrl: string; quantity?: number }) => {
+    const qty = item.quantity ?? 1;
+
+    setCart((prev) => {
+      const existing = prev.find((i) => i.id === item.id);
+      if (existing) {
+        return prev
+          .map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + qty } : i))
+          .filter((i) => i.quantity > 0);
+      } else {
+        return [...prev, { ...item, quantity: qty }];
+      }
+    });
+
     try {
-      await axiosClient.post("/cart", item);
-      toast.success(`${item.name} added to cart 🛒`);
-    } catch (err) {
-      console.error("❌ Failed to sync cart with API:", err);
-      toast.error("Item added locally, but failed to sync with server");
+      await api.post("/cart/add", { productId: item.id, quantity: qty });
+    } catch (err: any) {
+      console.error("Add to cart failed", err);
+      toast.error(err.response?.data?.error || "Failed to update cart");
     }
   };
 
-
-  const removeFromCart = async (id: string) => {
-    setCart((prev) => prev.filter((i) => i.id !== id));
+  const removeFromCart = async (productId: string) => {
+    setCart((prev) => prev.filter((i) => i.id !== productId));
 
     try {
-      await axiosClient.delete(`/cart/${id}`);
+      await api.delete(`/cart/remove/${productId}`);
       toast.info("Item removed from cart");
     } catch (err) {
-      console.error("Failed to remove from cart:", err);
+      console.error(err);
       toast.error("Failed to remove item");
     }
   };
 
   const clearCart = async () => {
-    setCart([]);
-
+    if (!user) return;
     try {
-      await axiosClient.delete("/cart");
+      await api.delete("/cart");
+      setCart([]);
       toast.info("Cart cleared");
     } catch (err) {
-      console.error("Failed to clear cart:", err);
+      console.error(err);
       toast.error("Failed to clear cart");
     }
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, cartCount }}>
       {children}
     </CartContext.Provider>
   );
 }
 
 export function useCart() {
-  const context = useContext(CartContext);
-  if (!context) throw new Error("useCart must be used within a CartProvider");
-  return context;
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error("useCart must be used within CartProvider");
+  return ctx;
 }

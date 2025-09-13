@@ -12,13 +12,13 @@ export default function ProductGallery({
   const [mainImage, setMainImage] = useState(images[0]?.url);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-10">
       <Image
         src={mainImage || "/placeholder.png"}
         alt={name}
-        width={100}
-        height={100}
-        className="rounded-lg w-full h-auto object-cover"
+        width={50}
+        height={50}
+        className="rounded-lg w-[50%] border"
       />
       <div className="flex gap-2">
         {images.map((img, idx) => (
