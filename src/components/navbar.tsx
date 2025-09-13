@@ -319,7 +319,7 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-medium truncate">{item.name}</h3>
-                          <p className="mt-1 text-sm font-medium">${item.price.toFixed(2)}</p>
+                          <p className="mt-1 text-sm font-medium">Rs {item.price.toFixed(2)}</p>
                           <div className="flex items-center mt-2">
                             <button onClick={() => updateQuantity(item, item.quantity - 1)} className="p-1 rounded-md hover:bg-gray-100">
                               <Minus className="h-3 w-3" />
@@ -343,18 +343,26 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
                 <div className="border-t p-4 bg-gray-50">
                   <div className="flex justify-between text-lg font-medium mb-4">
                     <span>Total:</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>Rs {totalPrice.toFixed(2)}</span>
                   </div>
-                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-md text-base font-medium">
-                    Proceed to Checkout
-                  </Button>
-                  <div className="mt-3 text-center">
-                    <button onClick={handleCloseCart} className="text-sm text-gray-500 hover:text-gray-700">
-                      Continue Shopping
-                    </button>
-                  </div>
+
+                  <Link
+                    href="/customer/carts"
+                    onClick={handleCloseCart}
+                    className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-md text-base font-medium transition-colors"
+                  >
+                    Proceed to Carts
+                  </Link>
+
+                  <button
+                    onClick={handleCloseCart}
+                    className="mt-3 w-full text-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    Continue Shopping
+                  </button>
                 </div>
               )}
+
             </div>
           </div>
         </div>

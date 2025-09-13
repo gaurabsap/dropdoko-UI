@@ -20,6 +20,8 @@ export default function ShippingAddressPage() {
   const [city, setCity] = useState({ id: "", name: "" });
   const [zone, setZone] = useState({ id: "", name: "" });
   const [address, setAddress] = useState("");
+  const [isDefault, setIsDefault] = useState(false);
+
   const [saving, setSaving] = useState(false);
 
   const [provinceList, setProvinceList] = useState<any[]>([]);
@@ -137,6 +139,7 @@ export default function ShippingAddressPage() {
           city: city.name,
           zone: zone.name,
           address,
+          isDefault,
         });
         toast.success("Shipping address saved");
       } else {
@@ -148,6 +151,7 @@ export default function ShippingAddressPage() {
           city: city.name,
           zone: zone.name,
           address,
+          isDefault,
         });
         toast.success("Shipping address updated");
       }
@@ -280,6 +284,16 @@ export default function ShippingAddressPage() {
             </div>
           </div>
 
+          <label className="flex items-center space-x-2 mt-4">
+            <input
+              type="checkbox"
+              checked={isDefault}
+              onChange={(e) => setIsDefault(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <span className="text-gray-700">Set as default address</span>
+          </label>
+                
           <div className="flex justify-end mt-4">
             <button
               onClick={handleSave}

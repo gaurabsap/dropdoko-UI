@@ -76,7 +76,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ slug:
           )}
 
           <p className="text-xl font-bold text-orange-600">
-            Rs. {product.price.toLocaleString()} /-
+            Rs {product.price.toLocaleString()} /-
           </p>
           <p className="text-gray-700">{product.description}</p>
 

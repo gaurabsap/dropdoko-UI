@@ -94,7 +94,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     if (!user) return;
     try {
-      await api.delete("/cart");
+      await api.delete("/cart/clear");
       setCart([]);
       toast.info("Cart cleared");
     } catch (err) {
