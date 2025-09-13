@@ -54,14 +54,17 @@ export default function ShippingAddressPage() {
         setFullName(a.fullName || "");
         setPhoneNumber(a.phoneNumber || "");
         setLandmark(a.landmark || "");
-        setAddress(a.address || "");
+        setAddress(a.addressLine || "");
+        setIsDefault(a.isDefault || false);
 
         const pObj = provinceList.find((p) => p.name === a.province);
         if (pObj) setProvince({ id: pObj.id, name: pObj.name });
         else setProvince({ id: "", name: a.province || "" });
 
         setCity({ id: "", name: a.city || "" });
-        setZone({ id: "", name: a.zone || "" });
+         const zObj = zoneList.find((z) => z.name === a.zone);
+          if (zObj) setZone({ id: zObj.id, name: zObj.name });
+          else setZone({ id: "", name: a.zone || "" });
       } catch (err) {
         console.error(err);
         toast.error("Failed to load address");
@@ -69,8 +72,9 @@ export default function ShippingAddressPage() {
     }
 
     fetchAddress();
-  }, [isCreate, slug, provinceList.length]);
+  }, [isCreate, slug, provinceList.length,]);
 
+  
   // fetch cities when province changes
   useEffect(() => {
     if (!province.id) {
@@ -106,7 +110,9 @@ export default function ShippingAddressPage() {
   useEffect(() => {
     if (!city.id) {
       setZoneList([]);
-      setZone({ id: "", name: "" });
+      if (isCreate) {
+        setZone({ id: "", name: "" });
+      }
       return;
     }
     async function fetchZones() {
