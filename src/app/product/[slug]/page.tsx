@@ -18,14 +18,7 @@ interface Product {
   reviews?: { user: string; comment: string; rating: number }[];
 }
 
-interface ProductPageProps {
-  params: {
-    slug: string;
-  };
-}
-
-
-// pre-generate static params
+// Pre-generate static params for SSG
 export async function generateStaticParams() {
   try {
     const res = await api.get("/products/list");
@@ -36,57 +29,47 @@ export async function generateStaticParams() {
   }
 }
 
-// ✅ App Router always passes params synchronously here
-export default async function ProductDetailPage({params}: ProductPageProps) {
+
+
+export default async function ProductDetailPage(props: { params: Promise<{ slug: string }> }) {
+  // ✅ Fix: await params before using
+   const params = await props.params;
   const slug = params.slug;
 
   if (!slug || slug.toLowerCase() === "favicon.ico") {
-    return (
-      <div className="text-center py-20 text-gray-500">Product not found.</div>
-    );
+    return <div className="text-center py-20 text-gray-500">Product not found.</div>;
   }
 
   let product: Product | null = null;
+
   try {
     const res = await api.get(`/products/slug/${encodeURIComponent(slug)}`);
     product = res.data.data;
   } catch {
-    return (
-      <div className="text-center py-20 text-gray-500">Product not found.</div>
-    );
+    return <div className="text-center py-20 text-gray-500">Product not found.</div>;
   }
 
   if (!product) {
-    return (
-      <div className="text-center py-20 text-gray-500">Product not found.</div>
-    );
+    return <div className="text-center py-20 text-gray-500">Product not found.</div>;
   }
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
-      {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-4">
-        <Link href="/" className="hover:underline text-gray-500">
-          Home
-        </Link>{" "}
-        / <span className="text-gray-800">{product.name}</span>
+        <Link href="/" className="hover:underline text-gray-500">Home</Link> /{" "}
+        <span className="text-gray-800">{product.name}</span>
       </nav>
 
       <div className="flex flex-col md:flex-row">
-        {/* Image gallery (client) */}
         <div className="md:w-1/2">
           <ProductGallery images={product.images} name={product.name} />
         </div>
-
-        {/* Product info */}
         <div className="md:w-1/2 flex flex-col gap-4">
           <h1 className="text-3xl font-bold">{product.name}</h1>
 
           {product.rating && (
             <div className="flex items-center gap-2">
-              <p className="text-yellow-500">
-                {"★".repeat(Math.floor(product.rating))}
-              </p>
+              <p className="text-yellow-500">{"★".repeat(Math.floor(product.rating))}</p>
               <span className="text-gray-400 text-sm">
                 ({product.reviews?.length || 0} ratings)
               </span>
@@ -96,7 +79,6 @@ export default async function ProductDetailPage({params}: ProductPageProps) {
           <p className="text-xl font-bold text-orange-600">
             Rs. {product.price.toLocaleString()} /-
           </p>
-
           <p className="text-gray-700">{product.description}</p>
 
           <div className="flex gap-3 mt-4">
@@ -108,32 +90,21 @@ export default async function ProductDetailPage({params}: ProductPageProps) {
         </div>
       </div>
 
-      {/* Product details */}
       <div className="mt-12">
-        <h2 className="text-2xl font-bold text-orange-500 mb-4">
-          Product description
-        </h2>
+        <h2 className="text-2xl font-bold text-orange-500 mb-4">Product description</h2>
         <p className="text-gray-700 mb-6">{product.description}</p>
 
         <h2 className="text-2xl font-bold text-orange-500 mb-2">Key Features</h2>
         <ul className="list-disc pl-6 text-gray-700 mb-6">
-          {product.features?.map((f, i) => (
-            <li key={i}>{f}</li>
-          ))}
+          {product.features?.map((f, i) => <li key={i}>{f}</li>)}
         </ul>
 
-        <h2 className="text-2xl font-bold text-orange-500 mb-2">
-          Technical Specifications
-        </h2>
+        <h2 className="text-2xl font-bold text-orange-500 mb-2">Technical Specifications</h2>
         <ul className="list-disc pl-6 text-gray-700 mb-6">
-          {product.specifications?.map((spec, i) => (
-            <li key={i}>{spec}</li>
-          ))}
+          {product.specifications?.map((spec, i) => <li key={i}>{spec}</li>)}
         </ul>
 
-        <h2 className="text-2xl font-bold text-orange-500 mb-2">
-          Customer Reviews
-        </h2>
+        <h2 className="text-2xl font-bold text-orange-500 mb-2">Customer Reviews</h2>
         {product.reviews?.length ? (
           <ul className="space-y-4">
             {product.reviews.map((rev, i) => (
