@@ -1,5 +1,4 @@
 // app/product/[slug]/page.tsx
-import Image from "next/image";
 import AddToCartButton from "@/components/AddToCartButton";
 import api from "@/tools/axiosClient";
 import ProductGallery from "@/components/ProductGallery";

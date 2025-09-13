@@ -30,15 +30,9 @@ export default function AuthPage() {
     password: "",
   });
 
-  const [signupErrors, setSignupErrors] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const [signupErrors, setSignupErrors] = useState<Record<string, string>>({})
 
-  const { login, googleLogin } = useUser();
+  const { login, googleLogin, signup } = useUser();
 
   const [loginLoading, setLoginLoading] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
@@ -84,20 +78,55 @@ export default function AuthPage() {
 
   // --- Signup ---
   const handleSignup = async () => {
-    // Check all fields before submit
-    Object.entries(signupData).forEach(([key, value]) => validateField(key, value));
-    if (Object.values(signupErrors).some(Boolean)) return;
+    // Create a local errors object
+    const errors: Record<string, string> = {};
+
+    Object.entries(signupData).forEach(([key, value]) => {
+      switch (key) {
+        case "fullName":
+          if (!value.trim()) errors.fullName = "Full name is required.";
+          break;
+        case "email":
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!value.trim()) errors.email = "Email is required.";
+          else if (!emailRegex.test(value)) errors.email = "Invalid email address.";
+          break;
+        case "phone":
+          const phoneRegex = /^\d{10,15}$/;
+          if (!value.trim()) errors.phone = "Phone number is required.";
+          else if (!phoneRegex.test(value)) errors.phone = "Invalid phone number.";
+          break;
+        case "password":
+          if (!value) errors.password = "Password is required.";
+          else if (value.length < 8) errors.password = "Password must be at least 6 characters.";
+          if (signupData.confirmPassword && value !== signupData.confirmPassword) {
+            errors.confirmPassword = "Passwords do not match.";
+          }
+          break;
+        case "confirmPassword":
+          if (!value) errors.confirmPassword = "Please confirm your password.";
+          else if (value !== signupData.password) errors.confirmPassword = "Passwords do not match.";
+          break;
+      }
+    });
+
+    // Update state
+    setSignupErrors(errors);
+
+    // Stop if there are any errors
+    if (Object.keys(errors).length > 0) return;
 
     try {
       setSignupLoading(true);
-      await api.post("/auth/signup", signupData);
-      setIsLogin(true);
+      const { confirmPassword, ...payload } = signupData;
+      await signup(payload);
     } catch (err) {
       console.error(err);
     } finally {
       setSignupLoading(false);
     }
   };
+
 
   // --- Login ---
   const handleLogin = async () => {
@@ -220,16 +249,29 @@ export default function AuthPage() {
                       }}
                       className="w-full border-b border-gray-300 py-2 pr-10 outline-none focus:border-orange-500 transition-colors"
                     />
-                    {field.includes("password") && (
+                    {(field === "password" || field === "confirmPassword") && (
                       <span
-                        className="absolute right-0 top-1/2 -translate-y-1/2 pr-2 cursor-pointer"
+                        className="absolute right-0 top-1/2 -translate-y-[80%] pr-2 cursor-pointer"
                         onClick={() =>
-                          field === "password" ? setShowPassword(!showPassword) : setShowConfirmPassword(!showConfirmPassword)
+                          field === "password"
+                            ? setShowPassword(!showPassword)
+                            : setShowConfirmPassword(!showConfirmPassword)
                         }
                       >
-                        {field === "password" ? (showPassword ? <EyeOff className="w-5 h-5 text-gray-500" /> : <Eye className="w-5 h-5 text-gray-500" />) : showConfirmPassword ? <EyeOff className="w-5 h-5 text-gray-500" /> : <Eye className="w-5 h-5 text-gray-500" />}
+                        {field === "password" ? (
+                          showPassword ? (
+                            <EyeOff className="w-5 h-5 text-gray-500" />
+                          ) : (
+                            <Eye className="w-5 h-5 text-gray-500" />
+                          )
+                        ) : showConfirmPassword ? (
+                          <EyeOff className="w-5 h-5 text-gray-500" />
+                        ) : (
+                          <Eye className="w-5 h-5 text-gray-500" />
+                        )}
                       </span>
                     )}
+
                     <AnimatePresence>
                       {signupErrors[field as keyof typeof signupErrors] && (
                         <motion.p

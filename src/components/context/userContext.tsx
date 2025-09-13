@@ -20,7 +20,7 @@ type UserContextType = {
   loading: boolean;
   isAdmin: boolean;
   logout: () => Promise<void>;
-  signup: (data: { name: string; email: string; password: string }) => Promise<boolean>;
+  signup: (data: { fullName: string; email: string; password: string }) => Promise<boolean>;
   googleLogin: () => void;
 };
 
@@ -79,7 +79,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   // ----------------- SIGNUP -----------------
-  const signup = async (data: { name: string; email: string; password: string }): Promise<boolean> => {
+  const signup = async (data: { fullName: string; email: string; password: string }): Promise<boolean> => {
     try {
       await api.post("/auth/signup", data);
       toast.success("Signup successful! Please login.");
