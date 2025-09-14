@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
     // Ignore ESLint errors during production builds
     ignoreDuringBuilds: true,
   },
-  missingSuspenseWithCSRBailout: false,
 };
 
 export default nextConfig;
