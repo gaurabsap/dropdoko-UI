@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/context/userContext";
 
+export const dynamic = "force-dynamic";
 
 export default function OTPVerification() {
     const { user } = useUser();
