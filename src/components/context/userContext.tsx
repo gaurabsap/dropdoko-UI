@@ -117,6 +117,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setIsAdmin(false);
       toast.info("Logged out successfully");
+      router.push("/");
     }
   };
 
