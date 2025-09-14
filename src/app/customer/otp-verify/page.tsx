@@ -1,25 +1,20 @@
 /* eslint-disable */
-
-
 "use client";
+
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
-
-
-
-
 import api from "@/tools/axiosClient";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/context/userContext";
 
-
-export default function OTPVerification() {
-    const { user } = useUser();
-   const router = useRouter();
-const searchParams = useSearchParams();
+// Create a wrapper component that handles search params
+function OTPVerificationContent() {
+  const { user, refreshUser  } = useUser();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Capture email from query param or context
   const initialEmail = searchParams.get("email") || user?.email || "";
@@ -91,8 +86,9 @@ const searchParams = useSearchParams();
       
       const verify = await api.post("/auth/verify-otp", {
         token: otpString
-      } );
+      });
       if (verify) {
+        await refreshUser();
         setSuccess("OTP verified successfully!");
         toast.success("OTP verified successfully! Please login.");
         router.replace("/customer/login");
@@ -106,30 +102,29 @@ const searchParams = useSearchParams();
     }
   };
 
-    const handleResend = async () => {
-        if (countdown > 0) return; // prevent spamming
+  const handleResend = async () => {
+    if (countdown > 0) return; // prevent spamming
 
-        setError("");
-        setOtp(["", "", "", "", "", ""]);
-        inputRefs.current[0]?.focus();
+    setError("");
+    setOtp(["", "", "", "", "", ""]);
+    inputRefs.current[0]?.focus();
 
-        try {
-            // Make sure to send the user's 
-            const response = await api.post("/auth/resend-otp", { email });
+    try {
+      // Make sure to send the user's 
+      const response = await api.post("/auth/resend-otp", { email });
 
-            if (response?.data?.success) {
-                toast.info("A new OTP has been sent to your email.");
-                setSuccess("Code resent successfully!");
-                setCountdown(30); // start countdown after successful resend
-            } else {
-                toast.error("Failed to resend OTP. Please try again.");
-            }
-        } catch (err: any) {
-            console.error("Resend OTP error:", err);
-            toast.error(err.response?.data?.error || "Something went wrong while resending OTP.");
-        }
-    };
-
+      if (response?.data?.success) {
+        toast.info("A new OTP has been sent to your email.");
+        setSuccess("Code resent successfully!");
+        setCountdown(30); // start countdown after successful resend
+      } else {
+        toast.error("Failed to resend OTP. Please try again.");
+      }
+    } catch (err: any) {
+      console.error("Resend OTP error:", err);
+      toast.error(err.response?.data?.error || "Something went wrong while resending OTP.");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -213,5 +208,18 @@ const searchParams = useSearchParams();
         </div>
       </div>
     </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function OTPVerification() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    }>
+      <OTPVerificationContent />
+    </Suspense>
   );
 }

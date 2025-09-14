@@ -27,6 +27,7 @@ type UserContextType = {
   signup: (data: { fullName: string; email: string; password: string }) => Promise<boolean>;
   googleLogin: () => void;
   isEmailVerified: boolean; 
+  refreshUser: () => Promise<void>; 
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -36,6 +37,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+
+
+    const refreshUser = async () => {
+    try {
+      const res = await api.get("/auth/me");
+      const userData = res.data.user;
+      setUser(userData);
+      setIsAdmin(userData?.role === "admin");
+    } catch (err) {
+      console.error("Failed to refresh user:", err);
+      setUser(null);
+      setIsAdmin(false);
+    }
+  };
 
   // ----------------- LOGIN -----------------
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -48,21 +63,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (!userData) return false;
 
       // Check if user is verified
-      if (!userData.isVerified) {
-        setUser(null);
+      // if (!userData.isVerified) {
+      //   setUser(null);
 
-        // Call OTP resend API
-        try {
-          await api.post("/auth/resend-otp", { email });
-          router.push(`/customer/otp-verify?email=${encodeURIComponent(userData?.email)}`);
-        } catch (otpErr: any) {
-          console.error("OTP resend error:", otpErr);
-          toast.error("Failed to resend OTP. Please try again later.");
-        }
+      //   // Call OTP resend API
+      //   try {
+      //     await api.post("/auth/resend-otp", { email });
+      //     router.push(`/customer/otp-verify?email=${encodeURIComponent(userData?.email)}`);
+      //   } catch (otpErr: any) {
+      //     console.error("OTP resend error:", otpErr);
+      //     toast.error("Failed to resend OTP. Please try again later.");
+      //   }
 
-        toast.error("Please verify your email before logging in.");
-        return false;
-      }
+      //   toast.error("Please verify your email before logging in.");
+      //   return false;
+      // }
 
       // Check for admin
       if (userData.role === "admin") {
@@ -149,7 +164,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // ----------------- RENDER CONTEXT PROVIDER -----------------
   return (
-    <UserContext.Provider value={{ user, login, loading, isAdmin, logout, signup, googleLogin, isEmailVerified }}>
+    <UserContext.Provider value={{ user, login, loading, isAdmin, logout, signup, googleLogin, isEmailVerified, refreshUser }}>
       {children}
     </UserContext.Provider>
   );
