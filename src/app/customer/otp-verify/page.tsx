@@ -1,33 +1,39 @@
 /* eslint-disable */
 
-"use client";
-export const dynamic = "force-dynamic"; // prevents SSR/static rendering
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "react-toastify";
+"use client";
+export const dynamic = "force-dynamic";
+
+
+
+
 import api from "@/tools/axiosClient";
+import { useState, useRef, useEffect } from "react";
+import { toast } from "react-toastify";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/context/userContext";
 
-export default function OTPVerificationPage() {
-  const { user } = useUser();
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
+export default function OTPVerification() {
+    const { user } = useUser();
+   const router = useRouter();
+const searchParams = useSearchParams();
+
+  // Capture email from query param or context
   const initialEmail = searchParams.get("email") || user?.email || "";
-  const [email] = useState(initialEmail);
+  const [email, setEmail] = useState<string>(initialEmail);
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [countdown, setCountdown] = useState(30);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [countdown, setCountdown] = useState<number>(30);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Countdown timer for resend button
   useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    return () => clearTimeout(timer);
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
   }, [countdown]);
 
   const handleChange = (index: number, value: string) => {
@@ -39,7 +45,10 @@ export default function OTPVerificationPage() {
     setError("");
     setSuccess("");
 
-    if (value && index < 5) inputRefs.current[index + 1]?.focus();
+    // Auto focus to next input
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -50,13 +59,15 @@ export default function OTPVerificationPage() {
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text").slice(0, 6);
-    if (!/^\d+$/.test(pasted)) return;
-
-    const newOtp = [...otp];
-    for (let i = 0; i < pasted.length; i++) newOtp[i] = pasted[i];
-    setOtp(newOtp);
-    inputRefs.current[Math.min(pasted.length, 5)]?.focus();
+    const pastedData = e.clipboardData.getData("text").slice(0, 6);
+    if (/^\d+$/.test(pastedData)) {
+      const newOtp = [...otp];
+      for (let i = 0; i < pastedData.length; i++) {
+        if (i < 6) newOtp[i] = pastedData[i];
+      }
+      setOtp(newOtp);
+      inputRefs.current[Math.min(pastedData.length, 5)]?.focus();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,50 +84,57 @@ export default function OTPVerificationPage() {
     }
 
     try {
-      const verify = await api.post("/auth/verify-otp", { token: otpString });
-      if (verify?.data?.success) {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const verify = await api.post("/auth/verify-otp", {
+        token: otpString
+      } );
+      if (verify) {
         setSuccess("OTP verified successfully!");
         toast.success("OTP verified successfully! Please login.");
         router.replace("/customer/login");
       } else {
         setError("Invalid OTP. Please try again.");
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Something went wrong. Please try again.");
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResend = async () => {
-    if (countdown > 0) return;
+    const handleResend = async () => {
+        if (countdown > 0) return; // prevent spamming
 
-    setOtp(["", "", "", "", "", ""]);
-    setError("");
-    setSuccess("");
-    inputRefs.current[0]?.focus();
+        setError("");
+        setOtp(["", "", "", "", "", ""]);
+        inputRefs.current[0]?.focus();
 
-    try {
-      const response = await api.post("/auth/resend-otp", { email });
-      if (response?.data?.success) {
-        setSuccess("Code resent successfully!");
-        toast.info("A new OTP has been sent to your email.");
-        setCountdown(30);
-      } else {
-        toast.error("Failed to resend OTP. Please try again.");
-      }
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.error || "Something went wrong while resending OTP.");
-    }
-  };
+        try {
+            // Make sure to send the user's 
+            const response = await api.post("/auth/resend-otp", { email });
+
+            if (response?.data?.success) {
+                toast.info("A new OTP has been sent to your email.");
+                setSuccess("Code resent successfully!");
+                setCountdown(30); // start countdown after successful resend
+            } else {
+                toast.error("Failed to resend OTP. Please try again.");
+            }
+        } catch (err: any) {
+            console.error("Resend OTP error:", err);
+            toast.error(err.response?.data?.error || "Something went wrong while resending OTP.");
+        }
+    };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
         <div className="bg-gradient-to-r from-orange-500 to-amber-600 p-8 text-center">
           <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
           </div>
@@ -143,8 +161,23 @@ export default function OTPVerificationPage() {
               ))}
             </div>
 
-            {error && <div className="bg-red-50 text-red-700 p-3 rounded-lg">{error}</div>}
-            {success && <div className="bg-green-50 text-green-700 p-3 rounded-lg">{success}</div>}
+            {error && (
+              <div className="bg-red-50 text-red-700 p-3 rounded-lg flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {success && (
+              <div className="bg-green-50 text-green-700 p-3 rounded-lg flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{success}</span>
+              </div>
+            )}
 
             <button
               type="submit"
