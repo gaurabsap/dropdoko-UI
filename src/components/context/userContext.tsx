@@ -2,6 +2,9 @@
 import { useEffect, useState, createContext, useContext, ReactNode } from "react";
 import api from "@/tools/axiosClient";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+
+
 
 type User = {
   _id?: string;
@@ -12,6 +15,7 @@ type User = {
   email: string;
   profile?: string;
   role?: string;
+  isVerified?: boolean;
 };
 
 type UserContextType = {
@@ -22,11 +26,13 @@ type UserContextType = {
   logout: () => Promise<void>;
   signup: (data: { fullName: string; email: string; password: string }) => Promise<boolean>;
   googleLogin: () => void;
+  isEmailVerified: boolean; 
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -39,14 +45,34 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // Get current user info
       const meRes = await api.get("/auth/me");
       const userData = meRes.data.user;
+      if (!userData) return false;
 
-      if (userData.role === 'admin') {
+      // Check if user is verified
+      if (!userData.isVerified) {
+        setUser(null);
+
+        // Call OTP resend API
+        try {
+          await api.post("/auth/resend-otp", { email });
+          router.push(`/customer/otp-verify?email=${encodeURIComponent(userData?.email)}`);
+        } catch (otpErr: any) {
+          console.error("OTP resend error:", otpErr);
+          toast.error("Failed to resend OTP. Please try again later.");
+        }
+
+        toast.error("Please verify your email before logging in.");
+        return false;
+      }
+
+      // Check for admin
+      if (userData.role === "admin") {
         setIsAdmin(true);
         setUser(null);
         toast.error("Admin accounts must use the admin portal");
         return false;
       }
 
+      // Success
       setUser(userData);
       setIsAdmin(false);
       toast.success(`Welcome ${userData.fullName || userData.email}!`);
@@ -59,6 +85,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return false;
     }
   };
+
 
   // ----------------- GOOGLE LOGIN -----------------
   const googleLogin = () => {
@@ -82,7 +109,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const signup = async (data: { fullName: string; email: string; password: string }): Promise<boolean> => {
     try {
       await api.post("/auth/signup", data);
-      toast.success("Signup successful! Please login.");
+      toast.success("Signup successful! Please enter the OTP sent to your email.");
       return true;
     } catch (err: any) {
       console.error("Signup error:", err);
@@ -118,9 +145,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     initAuth();
   }, []);
+  const isEmailVerified = user?.isVerified ?? false;
 
+  // ----------------- RENDER CONTEXT PROVIDER -----------------
   return (
-    <UserContext.Provider value={{ user, login, loading, isAdmin, logout, signup, googleLogin }}>
+    <UserContext.Provider value={{ user, login, loading, isAdmin, logout, signup, googleLogin, isEmailVerified }}>
       {children}
     </UserContext.Provider>
   );

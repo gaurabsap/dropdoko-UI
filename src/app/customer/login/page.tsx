@@ -1,5 +1,5 @@
-"use client";
 /* eslint-disable */
+"use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -120,6 +120,7 @@ export default function AuthPage() {
       setSignupLoading(true);
       const { confirmPassword, ...payload } = signupData;
       await signup(payload);
+      router.push("/customer/otp-verify");
     } catch (err) {
       console.error(err);
     } finally {
