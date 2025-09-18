@@ -28,7 +28,7 @@ const api = axios.create({
     "X-SUZUNE-TOKEN": process.env.NEXT_PUBLIC_SUZUNE_TOKEN || "",
   },
   withCredentials: true, // ✅ sends cookies automatically
-  timeout: 10000,
+  timeout: 20000,
 });
 
 // Silent refresh interval (refresh every 12 minutes)
@@ -39,7 +39,7 @@ if (typeof window !== "undefined") {
       console.log("Access token refreshed silently");
     } catch (err) {
       console.log("Silent refresh failed, redirecting to login");
-      window.location.href = "/login";
+      window.location.href = "/customer/login";
     }
   }, 12 * 60 * 1000); // 12 minutes
 }

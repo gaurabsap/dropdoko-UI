@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/tools/axiosClient";
 import { toast } from "react-toastify";
-
+import { useRouter } from "next/navigation";
 
 const CheckoutSkeleton = () => {
   return (
@@ -132,6 +132,7 @@ const CheckoutSkeleton = () => {
 
 
 export default function Checkout() {
+  const router = useRouter();
   const { cart, addToCart, removeFromCart, clearCart } = useCart();
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState("cod");
@@ -326,24 +327,41 @@ export default function Checkout() {
       return;
     }
 
+    if (!cart.length) {
+      toast.error("Your cart is empty");
+      return;
+    }
+
     try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          items: cart,
-          payment: selectedPayment,
-          address: selectedAddress
-        }),
-      });
-      const data = await res.json();
-      clearCart();
-      window.location.href = data.checkoutUrl || "/order/confirmation";
-    } catch (err) {
+      // Prepare payload for the backend
+      const payload = {
+        items: cart.map(item => ({
+          name: item.name,
+          product: item.id,
+          quantity: item.quantity,
+          price: item.price,
+          imageUrl: item.imageUrl
+        })),
+        paymentMethod: selectedPayment, // 'cod' or 'fonepay'
+        shippingAddressId: selectedAddress,
+        totalAmount: total
+      };
+
+      // Hit your backend API to create the order
+      const res = await api.post("/order/create", payload);
+      if (res.data.data && res.data.data._id) {
+        clearCart();
+        toast.success("Order placed successfully!");
+        router.replace(`/customer/checkout/success?orderId=${res.data.data._id}`);
+      } else {
+        throw new Error("Order creation failed");
+      }
+    } catch (err: any) {
       console.error(err);
-      alert("Checkout failed");
+      toast.error(err?.response?.data?.message || "Checkout failed. Please try again.");
     }
   };
+
 
   if (loading) {
     return <CheckoutSkeleton />;
@@ -545,15 +563,15 @@ export default function Checkout() {
                 </div>
                 
                 <div 
-                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPayment === "nepalpay" ? "border-orange-500 bg-orange-50" : "border-orange-100 hover:border-orange-300"}`}
-                  onClick={() => setSelectedPayment("nepalpay")}
+                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPayment === "fonepay" ? "border-orange-500 bg-orange-50" : "border-orange-100 hover:border-orange-300"}`}
+                  onClick={() => setSelectedPayment("fonepay")}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${selectedPayment === "nepalpay" ? "border-orange-500 bg-orange-500" : "border-orange-300"}`}>
-                      {selectedPayment === "nepalpay" && <div className="h-2 w-2 rounded-full bg-white"></div>}
+                    <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${selectedPayment === "fonepay" ? "border-orange-500 bg-orange-500" : "border-orange-300"}`}>
+                      {selectedPayment === "fonepay" && <div className="h-2 w-2 rounded-full bg-white"></div>}
                     </div>
                     <div>
-                      <h3 className="font-medium text-orange-900">Nepal Pay</h3>
+                      <h3 className="font-medium text-orange-900">Fonepay</h3>
                       <p className="text-sm text-orange-700">Secure online payment</p>
                     </div>
                   </div>

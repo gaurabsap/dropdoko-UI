@@ -80,10 +80,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // }
 
       // Check for admin
-      if (userData.role === "admin") {
-        setIsAdmin(true);
-        return false;
-      }
+      // if (userData.role === "admin") {
+      //   setIsAdmin(true);
+      //   return false;
+      // }
 
       // Success
       setUser(userData);
