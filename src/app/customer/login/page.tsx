@@ -120,7 +120,7 @@ export default function AuthPage() {
       setSignupLoading(true);
       const { confirmPassword, ...payload } = signupData;
       await signup(payload);
-      router.push("/customer/otp-verify");
+      router.push("/customer/otp-verify?email=" + encodeURIComponent(payload.email));
     } catch (err) {
       console.error(err);
     } finally {

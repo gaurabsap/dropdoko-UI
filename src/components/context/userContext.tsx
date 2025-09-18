@@ -82,8 +82,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // Check for admin
       if (userData.role === "admin") {
         setIsAdmin(true);
-        setUser(null);
-        toast.error("Admin accounts must use the admin portal");
         return false;
       }
 
