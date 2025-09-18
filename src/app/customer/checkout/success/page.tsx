@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import api from "@/tools/axiosClient";
 
 interface ShippingAddress {
@@ -15,7 +14,6 @@ interface ShippingAddress {
   landmark?: string;
   addressLine: string;
 }
-
 
 interface User {
   email: string;
@@ -35,14 +33,15 @@ interface OrderData {
   shippingAddress: ShippingAddress;
   items: OrderItem[];
   totalAmount: number;
-  user?: User
+  user?: User;
 }
 
-export default function CheckoutSuccessPage() {
+// ✅ Separate component for fetching & displaying order
+function CheckoutSuccessPageContent() {
   const searchParams = useSearchParams();
   const [order, setOrder] = useState<OrderData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch order details
   useEffect(() => {
     const fetchOrder = async () => {
       const orderId = searchParams.get("orderId");
@@ -53,15 +52,33 @@ export default function CheckoutSuccessPage() {
         setOrder(res.data.data);
       } catch (error) {
         console.error("Failed to fetch order details", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchOrder();
   }, [searchParams]);
 
+  // Skeleton loader
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 space-y-4 animate-pulse">
+        <div className="w-64 h-8 bg-gray-300 rounded"></div>
+        <div className="w-48 h-6 bg-gray-300 rounded"></div>
+        <div className="w-full max-w-2xl space-y-2">
+          <div className="w-full h-4 bg-gray-200 rounded"></div>
+          <div className="w-full h-4 bg-gray-200 rounded"></div>
+          <div className="w-full h-4 bg-gray-200 rounded"></div>
+        </div>
+        <div className="w-full max-w-2xl h-48 bg-gray-200 rounded"></div>
+      </div>
+    );
+  }
+
   if (!order) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p className="text-gray-600 text-lg">Loading your order...</p>
+        <p className="text-gray-600 text-lg">Order not found.</p>
       </div>
     );
   }
@@ -111,7 +128,7 @@ export default function CheckoutSuccessPage() {
             </p>
           </div>
           <p>
-            <strong>Email:</strong> {order.user?.email}
+            <strong>Email:</strong> {order.user?.email ?? "N/A"}
           </p>
         </div>
 
@@ -155,12 +172,27 @@ export default function CheckoutSuccessPage() {
 
         {/* Footer */}
         <div className="mt-6 text-center text-sm text-gray-500 border-t pt-4">
-          <p>We’ve also sent a confirmation email to {order.user?.email}</p>
+          <p>We’ve also sent a confirmation email to {order.user?.email ?? "N/A"}</p>
           <p className="mt-2">
             &copy; {new Date().getFullYear()} DropDoko. All rights reserved.
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+// ✅ Wrap the component in Suspense to satisfy useSearchParams()
+export function CheckoutSuccessPageWrapper() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+        </div>
+      }
+    >
+      <CheckoutSuccessPageContent />
+    </Suspense>
   );
 }
