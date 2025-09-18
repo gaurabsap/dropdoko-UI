@@ -12,7 +12,7 @@ import { useUser } from "@/components/context/userContext";
 
 // Create a wrapper component that handles search params
 function OTPVerificationContent() {
-  const { user, refreshUser  } = useUser();
+  const { user  } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -88,7 +88,6 @@ function OTPVerificationContent() {
         token: otpString
       });
       if (verify) {
-        await refreshUser();
         setSuccess("OTP verified successfully!");
         toast.success("OTP verified successfully! Please login.");
         router.replace("/customer/login");
@@ -96,7 +95,7 @@ function OTPVerificationContent() {
         setError("Invalid OTP. Please try again.");
       }
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setError('Invalid OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }
