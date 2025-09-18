@@ -114,7 +114,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } finally {
       setUser(null);
       setIsAdmin(false);
-      toast.info("Logged out successfully");
+      // toast.info("Logged out successfully");
       router.push("/");
     }
   };
@@ -140,14 +140,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const res = await api.get("/auth/me");
         const userData = res.data.user;
 
-        if (userData.role === 'admin') {
-          setIsAdmin(true);
-          setUser(null);
-          toast.info("Admin session ended. Please use admin portal.");
-        } else {
-          setUser(userData);
-          setIsAdmin(false);
-        }
+        // if (userData.role === 'admin') {
+        //   setIsAdmin(true);
+        //   setUser(null);
+        //   toast.info("Admin session ended. Please use admin portal.");
+        // } else {
+
+        // }
+        setUser(userData);
+        setIsAdmin(false);
       } catch (err) {
         console.error("Auth init failed:", err);
         setUser(null);

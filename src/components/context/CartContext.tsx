@@ -84,7 +84,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       await api.delete(`/cart/remove/${productId}`);
-      toast.info("Item removed from cart");
+      // toast.info("Item removed from cart");
     } catch (err) {
       console.error(err);
       toast.error("Failed to remove item");
@@ -96,7 +96,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       await api.delete("/cart/clear");
       setCart([]);
-      toast.info("Cart cleared");
+      // toast.info("Cart cleared");
     } catch (err) {
       console.error(err);
       toast.error("Failed to clear cart");
