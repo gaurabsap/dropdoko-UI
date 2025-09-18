@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useRef } from "react";
 import api from "@/tools/axiosClient";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 type ImageType = {
   url: string;
@@ -14,6 +15,7 @@ type ProductType = {
   description: string;
   price: number | "";
   discountedPrice: number | "";
+  stock: number;
   categories?: string[];
   seo?: {
     metaTitle?: string;
@@ -28,20 +30,52 @@ export default function ProductUpload() {
     description: "",
     price: "",
     discountedPrice: "",
+    stock: 0,
     categories: [],
     seo: { metaTitle: "", metaDescription: "", keywords: [] },
   });
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [mainPreviews, setMainPreviews] = useState<string[]>([]);
+
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+
   const [mainImages, setMainImages] = useState<ImageType[]>([]);
+  const [galleryImages, setGalleryImages] = useState<ImageType[]>([]);
+
   const [loading, setLoading] = useState(false);
+
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   // ---------- Handlers ----------
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setProductData((prev) => ({ ...prev, [name]: value }));
+    setProductData((prev) => ({
+      ...prev,
+      [name]: name === "stock" ? parseInt(value) : value,
+    }));
+  };
+
+  // Main images selection
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    setSelectedFiles(files);
+    setMainPreviews(files.map((file) => URL.createObjectURL(file)));
+  };
+
+  // Gallery images selection
+  const handleGallerySelect = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    setGalleryFiles((prev) => [...prev, ...files]);
+    setGalleryPreviews((prev) => [
+      ...prev,
+      ...files.map((file) => URL.createObjectURL(file)),
+    ]);
   };
 
   // ---------- Cloudinary Upload ----------
@@ -63,10 +97,7 @@ export default function ProductUpload() {
 
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
+        { method: "POST", body: formData }
       );
 
       const data = await res.json();
@@ -81,32 +112,55 @@ export default function ProductUpload() {
     return uploaded;
   };
 
-  // ---------- File Selection ----------
-  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const files = Array.from(e.target.files);
-    setSelectedFiles(files);
-  };
-
-  // ---------- Submit Product ----------
+  // ---------- Submit ----------
   const handleSubmit = async () => {
+    if (!productData.name || !productData.price) {
+      toast.error("Name and Price are required.");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Upload images here on submit
-      const uploaded = await uploadToCloudinary(selectedFiles);
-      setMainImages(uploaded);
+      const uploadedMain = await uploadToCloudinary(selectedFiles);
+      const uploadedGallery = await uploadToCloudinary(galleryFiles);
 
-      const payload = { ...productData, images: uploaded };
-      const res = await api.post("/products/create", payload);
-      console.log("✅ Product created:", res.data);
+      setMainImages(uploadedMain);
+      setGalleryImages((prev) => [...prev, ...uploadedGallery]);
+
+      const payload = {
+        ...productData,
+        images: uploadedMain,
+        gallery: [...galleryImages, ...uploadedGallery],
+      };
+
+      await api.post("/products/create", payload);
+
+      // Reset form
+      setProductData({
+        name: "",
+        description: "",
+        price: "",
+        discountedPrice: "",
+        stock: 0,
+        categories: [],
+        seo: { metaTitle: "", metaDescription: "", keywords: [] },
+      });
+      setSelectedFiles([]);
+      setMainPreviews([]);
+      setGalleryFiles([]);
+      setGalleryPreviews([]);
+      setMainImages([]);
+      setGalleryImages([]);
+
+      toast.success("Product added successfully!");
     } catch (err) {
-      console.error("❌ Product creation failed:", err);
+      console.error(err);
+      toast.error("Failed to create product.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------- Render ----------
   return (
     <div className="max-w-3xl mx-auto p-8 bg-white rounded-xl shadow-lg mt-12">
       <h2 className="text-3xl font-bold text-orange-600 mb-8 text-center">
@@ -148,6 +202,14 @@ export default function ProductUpload() {
             onChange={handleChange}
             className="flex-1 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 transition"
           />
+          <input
+            type="number"
+            name="stock"
+            placeholder="Stock"
+            value={productData.stock}
+            onChange={handleChange}
+            className="flex-1 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 transition"
+          />
         </div>
       </div>
 
@@ -157,25 +219,63 @@ export default function ProductUpload() {
         <input
           type="file"
           multiple
+          accept="image/*"
           onChange={handleFileSelect}
           className="mb-4 border-2"
         />
-        {loading && <p className="text-gray-500">Uploading...</p>}
         <div className="flex gap-4 flex-wrap">
-          {mainImages.map((img) => (
-            <Image
-              key={img.public_id}
-              src={img.url}
-              alt="main"
-              width={112}
-              height={112}
-              className="w-28 h-28 object-cover rounded-lg shadow-sm"
-            />
+          {mainPreviews.map((src, idx) => (
+            <div key={idx} className="w-28 h-28 relative rounded-lg shadow-sm">
+              <Image
+                src={src}
+                alt={`main-preview-${idx}`}
+                fill
+                className="object-cover rounded-lg"
+              />
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Submit */}
+      {/* Gallery Images with "+" button */}
+      <div className="mt-8">
+        <h3 className="font-semibold text-orange-600 mb-3">Gallery Images</h3>
+
+        <div className="flex gap-4 overflow-x-auto py-2 items-center">
+          {galleryPreviews.map((src, idx) => (
+            <div
+              key={idx}
+              className="flex-shrink-0 w-28 h-28 relative rounded-lg shadow-sm"
+            >
+              <Image
+                src={src}
+                alt={`gallery-preview-${idx}`}
+                fill
+                className="object-cover rounded-lg"
+              />
+            </div>
+          ))}
+
+          {/* Plus button */}
+          <div
+            onClick={() => galleryInputRef.current?.click()}
+            className="flex-shrink-0 w-28 h-28 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg cursor-pointer hover:bg-gray-100"
+          >
+            <span className="text-3xl font-bold text-gray-500">+</span>
+          </div>
+
+          {/* Hidden file input for gallery */}
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            ref={galleryInputRef}
+            onChange={handleGallerySelect}
+            className="hidden"
+          />
+        </div>
+      </div>
+
       <button
         onClick={handleSubmit}
         disabled={loading}

@@ -11,6 +11,8 @@ interface Product {
   description: string;
   features: string[];
   specifications: string[];
+  stock: number;
+  gallery: { url: string }[];
   images: { url: string }[];
   slug: string;
   rating?: number;
@@ -61,7 +63,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ slug:
 
       <div className="flex flex-col md:flex-row">
         <div className="md:w-1/2">
-          <ProductGallery images={product.images} name={product.name} />
+          <ProductGallery images={product.gallery} name={product.name} />
         </div>
         <div className="md:w-1/2 flex flex-col gap-4">
           <h1 className="text-3xl font-bold">{product.name}</h1>

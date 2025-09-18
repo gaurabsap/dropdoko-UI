@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProductUpload from "@/components/admin/ProductUpload";
+import Link from "next/link";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -55,12 +56,12 @@ export default function AddProductPage() {
                 >
                   <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
                 </svg>
-                <a
+                <Link
                   href="/admin/products"
                   className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
                 >
                   Products
-                </a>
+                </Link>
               </div>
             </li>
             <li>
