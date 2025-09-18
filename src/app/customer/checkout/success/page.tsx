@@ -36,7 +36,7 @@ interface OrderData {
   user?: User;
 }
 
-// ✅ Separate component for fetching & displaying order
+// Inner component for fetching and displaying order
 function CheckoutSuccessPageContent() {
   const searchParams = useSearchParams();
   const [order, setOrder] = useState<OrderData | null>(null);
@@ -59,7 +59,6 @@ function CheckoutSuccessPageContent() {
     fetchOrder();
   }, [searchParams]);
 
-  // Skeleton loader
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 space-y-4 animate-pulse">
@@ -182,8 +181,8 @@ function CheckoutSuccessPageContent() {
   );
 }
 
-// ✅ Wrap the component in Suspense to satisfy useSearchParams()
-export function CheckoutSuccessPageWrapper() {
+// ✅ Default export page
+export default function CheckoutSuccessPage() {
   return (
     <Suspense
       fallback={
