@@ -137,7 +137,7 @@ export default function ReviewCard({ rev, refreshReviews }: ReviewCardProps) {
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-semibold text-gray-900">{rev.user.fullName}</p>
+            <p className="font-semibold text-gray-900">{rev.user?.fullName}</p>
             <p className="text-sm text-gray-500">
               {new Date(rev.createdAt).toLocaleDateString()}
             </p>
