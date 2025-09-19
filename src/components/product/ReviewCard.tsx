@@ -127,7 +127,7 @@ export default function ReviewCard({ rev, refreshReviews }: ReviewCardProps) {
       {/* Avatar */}
       <Image
         src={rev.user?.profile || "/placeholder-avatar.png"}
-        alt={rev.user.fullName}
+        alt={rev.user?.fullName}
         className="w-12 h-12 rounded-full object-cover"
         width={48}
         height={48}
