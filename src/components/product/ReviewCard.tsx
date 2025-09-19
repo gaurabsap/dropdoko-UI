@@ -126,7 +126,7 @@ export default function ReviewCard({ rev, refreshReviews }: ReviewCardProps) {
     <li className="flex gap-4 border-b pb-4">
       {/* Avatar */}
       <Image
-        src={rev.user.profile || "/placeholder-avatar.png"}
+        src={rev.user?.profile || "/placeholder-avatar.png"}
         alt={rev.user.fullName}
         className="w-12 h-12 rounded-full object-cover"
         width={48}
