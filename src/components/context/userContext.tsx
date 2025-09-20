@@ -44,6 +44,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const res = await api.get("/auth/me");
       const userData = res.data.user;
       setUser(userData);
+      console.log("Refreshed user data:", userData);
       setIsAdmin(userData?.role === "admin");
     } catch (err) {
       console.error("Failed to refresh user:", err);
@@ -84,10 +85,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       //   setIsAdmin(true);
       //   return false;
       // }
-
-      // Success
+      setIsAdmin(userData.role === "admin");
       setUser(userData);
-      setIsAdmin(false);
       toast.success(`Welcome ${userData.fullName || userData.email}!`);
       return true;
 
@@ -139,16 +138,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       try {
         const res = await api.get("/auth/me");
         const userData = res.data.user;
-
-        // if (userData.role === 'admin') {
-        //   setIsAdmin(true);
-        //   setUser(null);
-        //   toast.info("Admin session ended. Please use admin portal.");
-        // } else {
-
-        // }
+        console.log("Initial user data:", userData);
+        setIsAdmin(userData.role === "admin");
         setUser(userData);
-        setIsAdmin(false);
       } catch (err) {
         console.error("Auth init failed:", err);
         setUser(null);
