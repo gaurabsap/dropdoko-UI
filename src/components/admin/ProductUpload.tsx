@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useEffect, useState, useRef, ChangeEvent } from "react";
@@ -387,29 +389,30 @@ export default function ProductUpload({ existingProduct, onSubmit }: Props) {
             </button>
           </div>
         ))}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-3 items-end">
           <input
             type="text"
             placeholder="Specification label"
             value={techInput.label}
             onChange={(e) => setTechInput({ ...techInput, label: e.target.value })}
-            className="border border-orange-200 rounded-lg p-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
+            className="col-span-2 border border-orange-200 rounded-lg p-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition w-full"
           />
           <input
             type="text"
             placeholder="Specification value"
             value={techInput.value}
             onChange={(e) => setTechInput({ ...techInput, value: e.target.value })}
-            className="border border-orange-200 rounded-lg p-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
+            className="col-span-2 border border-orange-200 rounded-lg p-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition w-full"
           />
           <button
             onClick={addTech}
-            className="px-4 bg-orange-500 text-white rounded-lg flex items-center justify-center hover:bg-orange-600 transition-colors"
+            className="w-20 h-10 bg-orange-500 text-white rounded-lg flex flex-row-reverse items-center justify-center hover:bg-orange-600 transition-colors self-start"
           >
-            <Plus size={18} className="mr-1" /> Add
+            Add <Plus size={18} />
           </button>
         </div>
       </div>
+
 
       {/* Box Contents */}
       <div className="bg-orange-50 p-4 rounded-lg mb-6">
