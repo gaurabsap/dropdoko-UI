@@ -21,9 +21,9 @@ interface Product {
 
 // Skeleton Loading Component
 const ProductSkeleton = () => (
-  <div className="flex flex-col items-center w-[calc(50%-12px)] md:w-auto">
-    <div className="relative aspect-square w-48 md:w-56 rounded-lg overflow-hidden shadow-md bg-gray-200 animate-pulse"></div>
-    <div className="mt-4 w-32 h-4 bg-gray-200 rounded animate-pulse"></div>
+  <div className="flex flex-col items-center">
+    <div className="relative aspect-square w-44 md:w-56 rounded-lg overflow-hidden shadow-md bg-gray-200 animate-pulse" />
+    <div className="mt-4 w-32 h-4 bg-gray-200 rounded animate-pulse" />
   </div>
 );
 
@@ -43,18 +43,16 @@ export default function Trending() {
         setLoading(false);
       } catch (err: any) {
         setError(err.message || "Something went wrong");
-      } 
+      }
     };
     fetchProducts();
   }, []);
 
   const handleAddToCart = async (product: Product) => {
     if (!user) {
-    toast.info("Please log in to add items to your cart");
-    return;
+      toast.info("Please log in to add items to your cart");
+      return;
     }
-
-    // If logged in, add to cart
     await addToCart({
       id: product.id,
       name: product.name,
@@ -66,8 +64,8 @@ export default function Trending() {
   if (error) {
     return (
       <section className="py-8 px-4 md:px-12">
-        <div className="w-full max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-semibold mb-8 md:mb-12 text-center md:text-left">
+        <div className="w-full max-w-7xl mx-auto">
+          <h2 className="text-3xl font-semibold mb-8 text-center md:text-left">
             Trending products:
           </h2>
           <div className="text-center text-red-500">{error}</div>
@@ -77,29 +75,30 @@ export default function Trending() {
   }
 
   return (
-    <section className="py-8 px-4 md:px-12">
-      <div className="w-full max-w-6xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-semibold mb-8 md:mb-12 text-gray-800 text-center md:text-left">
+    <section className="py-8 w-full">
+      <div className="max-w-6xl mx-auto px-6">
+        <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-gray-800 text-center md:text-left">
           Trending products:
         </h2>
-        <div className="flex flex-wrap justify-center md:justify-between gap-6 md:gap-4">
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 place-items-center">
           {loading
             ? Array.from({ length: 4 }).map((_, index) => <ProductSkeleton key={index} />)
             : products.map((product) => (
                 <div
                   key={product.id}
-                  className="flex flex-col items-center w-[calc(50%-12px)] md:w-auto group relative"
+                  className="group flex flex-col items-center w-full max-w-[220px]"
                 >
                   <Link href={`/product/${product.slug}`} className="w-full">
-                    <div className="relative aspect-square w-45 md:w-56 rounded-lg overflow-hidden shadow-md group-hover:scale-105 transition-transform duration-300">
+                    <div className="relative aspect-square w-full rounded-xl overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105">
                       <Image
                         src={product.images[0].url}
                         alt={product.name}
-                        width={100}
-                        height={100}
-                        className="w-full h-full object-cover"
+                        width={500}
+                        height={500}
+                        unoptimized
+                        className="object-cover w-full h-full"
                       />
-
                       <div
                         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer bg-gray-800 text-white p-2 rounded-full shadow-md"
                         onClick={(e) => {
@@ -112,8 +111,8 @@ export default function Trending() {
                     </div>
                   </Link>
 
-                  <p className="mt-4 font-bold text-sm md:text-base text-gray-800 text-center">
-                    {product.name.split(" ").slice(0, 2).join(" ")}
+                  <p className="mt-3 font-semibold text-sm md:text-base text-gray-800 text-center truncate w-full">
+                    {product.name}
                   </p>
                 </div>
               ))}

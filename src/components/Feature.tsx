@@ -28,7 +28,7 @@ export default function Feature() {
     <section className="w-full mt-10">
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-10 text-center">
-          <h2 className="text-start text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800">
+          <h2 className="text-center text-2xl md:text-3xl lg:text-4xl lg:text-start font-bold text-gray-800">
             Why DropDoko?
           </h2>
         </div>

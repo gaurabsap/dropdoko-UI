@@ -112,23 +112,30 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
     <>
       <nav className="w-full border-b sticky top-0 z-40 !bg-[#F4EFEA]">
         <div className="relative flex items-center w-full h-14 px-4 md:px-10">
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden absolute left-4 p-2"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          {/* Mobile/Tablet Left Section - Menu + Logo */}
+          <div className="flex items-center gap-3 md:gap-4 lg:hidden">
+            <button
+              className="p-2"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
 
-          {/* Logo + Desktop Nav */}
-          <div className="flex-1 flex items-center justify-center gap-3 md:gap-6">
+            <Link href="/" className="flex items-center gap-2 shrink-0">
+              <Image src="/logo.png" alt="Logo" width={35} height={35} className="cursor-pointer" />
+              <h1 className="font-bold text-base md:text-lg">Drop-doko</h1>
+            </Link>
+          </div>
+
+          {/* Desktop Logo + Navigation - EXACTLY AS BEFORE */}
+          <div className="hidden lg:flex flex-1 items-center justify-center gap-3 md:gap-6">
             <Link href="/" className="flex items-center gap-2 shrink-0">
               <Image src="/logo.png" alt="Logo" width={35} height={35} className="cursor-pointer" />
               <h1 className="font-bold text-base md:text-lg">Drop-doko</h1>
             </Link>
 
-            <div className="hidden md:block ml-2 md:ml-6 relative">
-              <nav className="hidden lg:flex items-center ml-5 text-sm font-medium">
+            <div className="ml-2 md:ml-6 relative">
+              <nav className="flex items-center ml-5 text-sm font-medium">
                 {links.map((link) => (
                   <NavLink key={link.name} href={link.href} label={link.name} />
                 ))}
@@ -136,8 +143,8 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
             </div>
           </div>
 
-          {/* Desktop Search + Cart + User */}
-          <div className="flex-1 hidden md:flex items-center justify-center gap-4">
+          {/* Desktop Search + Cart + User - EXACTLY AS BEFORE */}
+          <div className="hidden lg:flex flex-1 items-center justify-center gap-4">
             {/* Search */}
             <div className="relative w-full max-w-md">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
@@ -191,7 +198,7 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
             </Button>
 
             {/* User Menu */}
-            <div className="hidden lg:flex items-center gap-2 !cursor-pointer">
+            <div className="flex items-center gap-2 !cursor-pointer">
               {user ? (
                 <div className="relative" ref={menuRef}>
                   <Button
@@ -239,11 +246,34 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
               )}
             </div>
           </div>
+
+          {/* Mobile/Tablet Right Section - Search + Cart */}
+          <div className="lg:hidden flex items-center gap-3 ml-auto">
+            <button 
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              onClick={() => setMobileOpen(true)}
+            >
+              <SearchIcon className="h-5 w-5" />
+            </button>
+
+            <Button
+              variant="ghost"
+              className="h-8 px-2 flex items-center gap-1 relative cursor-pointer transition-colors"
+              onClick={() => setCartOpen(true)}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Dropdown */}
         {mobileOpen && (
-          <div className="md:hidden flex flex-col gap-3 px-4 py-3 border-t bg-white animate-in slide-in-from-top duration-300">
+          <div className="lg:hidden flex flex-col gap-3 px-4 py-3 border-t bg-white animate-in slide-in-from-top duration-300">
             <div className="relative w-full">
               <input
                 type="text"
@@ -254,6 +284,37 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
               />
               <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             </div>
+
+            {/* Search Results for Mobile */}
+            {(isSearching || searchResults.length > 0 || searchTerm) && (
+              <div className="w-full bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto z-50 flex flex-col items-center">
+                {isSearching ? (
+                  <div className="py-4">
+                    <div className="h-6 w-6 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  <>
+                    {searchResults.length > 0 ? (
+                      searchResults.map((item) => (
+                        <Link
+                          key={item.id}
+                          href={`/product/${item.slug}`}
+                          className="block px-4 py-2 w-full text-sm text-gray-700 hover:bg-gray-100 border-b"
+                          onClick={() => {
+                            setSearchTerm("");
+                            setMobileOpen(false);
+                          }}
+                        >
+                          {item.name}
+                        </Link>
+                      ))
+                    ) : (
+                      <p className="p-2 text-gray-500 text-sm">No results found</p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
             <div className="flex flex-col gap-2 mt-3">
               {links.map((link) => (
@@ -267,22 +328,41 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
                 </Link>
               ))}
 
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  setCartOpen(true);
-                }}
-                className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span>Cart ({cartCount})</span>
-              </button>
+              {/* User Section for Mobile */}
+              {user ? (
+                <>
+                  <Link
+                    href="/customer/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className="block text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
+                  >
+                    My Account
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMobileOpen(false);
+                    }}
+                    className="!cursor-pointer w-full text-left text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/customer/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="block text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
+                >
+                  Login
+                </Link>
+              )}
             </div>
           </div>
         )}
       </nav>
 
-      {/* Cart Sidebar */}
+      {/* Cart Sidebar - Same as before */}
       {cartOpen && (
         <div className="fixed inset-0 z-50">
           <div
