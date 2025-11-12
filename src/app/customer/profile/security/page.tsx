@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 import { useEffect, useState } from "react";
 import api from "@/tools/axiosClient";
@@ -25,7 +27,7 @@ export default function SecurityPage() {
     }
   }, [user]);
 
-  const handlePasswordChange = async (e) => {
+  const handlePasswordChange = async (e: any) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       setMessage("New passwords do not match.");
