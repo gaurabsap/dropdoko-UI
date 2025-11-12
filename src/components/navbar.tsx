@@ -112,7 +112,7 @@ export default function Navbar() {
           
           {/* ✅ MOBILE & TABLET VIEW - Search Centered Layout */}
           <div className="flex lg:hidden w-full flex-col">
-            <div className="flex items-center justify-between w-full gap-3">
+            <div className="flex items-center justify-between w-full gap-0">
               {/* Left: Hamburger */}
               <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2">
                 {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
