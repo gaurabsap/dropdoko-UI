@@ -32,8 +32,10 @@ export default function Navbar() {
   const [cartOpen, setCartOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const { user, logout, isAdmin } = useUser();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const desktopMenuRef = useRef<HTMLDivElement>(null);
   const { cart, cartCount, addToCart, removeFromCart } = useCart();
 
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -67,9 +69,15 @@ export default function Navbar() {
     };
   }, [cartOpen]);
 
+  // Separate click outside handlers for mobile and desktop
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+      if (desktopMenuRef.current && !desktopMenuRef.current.contains(e.target as Node)) {
+        setDesktopMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -158,7 +166,7 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* Right: Cart & User - FIXED: Added proper dropdown menu */}
+              {/* Right: Cart & User - FIXED: Using separate mobileMenuRef */}
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setCartOpen(true)}
@@ -173,29 +181,29 @@ export default function Navbar() {
                 </button>
 
                 {user ? (
-                  <div className="relative" ref={menuRef}>
+                  <div className="relative" ref={mobileMenuRef}>
                     <Image
                       src={user.profile || "/dokoo.png"}
                       alt="user"
                       width={30}
                       height={30}
                       className="rounded-full object-cover cursor-pointer"
-                      onClick={() => setMenuOpen(!menuOpen)}
+                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     />
-                    {/* Mobile profile dropdown - FIXED: Added this dropdown */}
-                    {menuOpen && (
+                    {/* Mobile profile dropdown */}
+                    {mobileMenuOpen && (
                       <div className="absolute right-0 top-12 w-40 bg-white border rounded-lg shadow-md py-2 z-50">
                         <Link
                           href="/customer/profile"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setMenuOpen(false)}
+                          onClick={() => setMobileMenuOpen(false)}
                         >
                           My Account
                         </Link>
                         <button
                           onClick={() => {
                             logout();
-                            setMenuOpen(false);
+                            setMobileMenuOpen(false);
                           }}
                           className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
@@ -283,12 +291,12 @@ export default function Navbar() {
 
             <div className="flex items-center gap-2 cursor-pointer">
               {user ? (
-                <div className="relative" ref={menuRef}>
+                <div className="relative" ref={desktopMenuRef}>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 p-0 rounded-full overflow-hidden cursor-pointer"
-                    onClick={() => setMenuOpen(!menuOpen)}
+                    onClick={() => setDesktopMenuOpen(!desktopMenuOpen)}
                   >
                     <Image
                       src={user.profile || "/dokoo.png"}
@@ -299,19 +307,19 @@ export default function Navbar() {
                     />
                   </Button>
 
-                  {menuOpen && (
+                  {desktopMenuOpen && (
                     <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-md py-2 z-50">
                       <Link
                         href="/customer/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setMenuOpen(false)}
+                        onClick={() => setDesktopMenuOpen(false)}
                       >
                         My Account
                       </Link>
                       <button
                         onClick={() => {
                           logout();
-                          setMenuOpen(false);
+                          setDesktopMenuOpen(false);
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
