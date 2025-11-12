@@ -138,6 +138,18 @@ export default function OrderDetailsPage() {
               <CreditCard className="text-orange-500" size={20} />
               <h2 className="font-medium text-gray-800">Payment</h2>
             </div>
+            {/* Track Order */}
+            {order.trackingId && (
+              <div className="flex justify-end">
+                <button
+                  onClick={() => router.push(`/customer/tracking/${order.trackingId}`)}
+                  className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition"
+                >
+                  Track Order
+                </button>
+              </div>
+            )}
+
             <p className="text-gray-700 text-sm">
               Method: {order.paymentMethod.toUpperCase()}
               <br />
