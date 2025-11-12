@@ -36,7 +36,6 @@ export default function Navbar() {
   const menuRef = useRef<HTMLDivElement>(null);
   const { cart, cartCount, addToCart, removeFromCart } = useCart();
 
-  // Calculate total price
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
   const handleCloseCart = () => {
@@ -47,15 +46,14 @@ export default function Navbar() {
     }, 300);
   };
 
-const updateQuantity = (item: CartItem, newQuantity: number) => {
-  if (newQuantity < 1) {
-    // Remove item if quantity is 0
-    removeFromCart(item.id);
-  } else {
-    const diff = newQuantity - item.quantity;
-    addToCart({ ...item, quantity: diff });
-  }
-};
+  const updateQuantity = (item: CartItem, newQuantity: number) => {
+    if (newQuantity < 1) {
+      removeFromCart(item.id);
+    } else {
+      const diff = newQuantity - item.quantity;
+      addToCart({ ...item, quantity: diff });
+    }
+  };
 
   const removeItem = (id: string) => {
     removeFromCart(id);
@@ -83,7 +81,6 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
     ...(isAdmin ? [{ name: "Admin", href: "/admin" }] : []),
   ];
 
-  // Search state
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -110,24 +107,113 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
 
   return (
     <>
-      <nav className="w-full border-b sticky top-0 z-40 !bg-[#F4EFEA]">
-        <div className="relative flex items-center w-full h-14 px-4 md:px-10">
-          {/* Mobile/Tablet Left Section - Menu + Logo */}
-          <div className="flex items-center gap-3 md:gap-4 lg:hidden">
-            <button
-              className="p-2"
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
-              {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+      <nav className="w-full border-b sticky top-0 z-40 bg-[#F4EFEA]">
+        <div className="relative flex items-center w-full h-14 px-4 md:px-6 lg:px-10">
+          
+          {/* ✅ MOBILE & TABLET VIEW - Search Centered Layout */}
+          <div className="flex lg:hidden w-full flex-col">
+            <div className="flex items-center justify-between w-full gap-3">
+              {/* Left: Hamburger */}
+              <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2">
+                {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
 
-            <Link href="/" className="flex items-center gap-2 shrink-0">
-              <Image src="/logo.png" alt="Logo" width={35} height={35} className="cursor-pointer" />
-              <h1 className="font-bold text-base md:text-lg">Drop-doko</h1>
-            </Link>
+              {/* Center: Search */}
+              <div className="flex-1 mx-2 relative">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="w-full pl-10 pr-3 py-2 bg-white text-gray-700 rounded-full focus:outline-none text-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+
+                {/* Mobile search results anchored under the input */}
+                {(isSearching || searchResults.length > 0 || searchTerm) && (
+                  <div className="absolute left-0 right-0 mt-2 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto z-50">
+                    {isSearching ? (
+                      <div className="py-4 flex justify-center">
+                        <div className="h-6 w-6 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>
+                      </div>
+                    ) : (
+                      <>
+                        {searchResults.length > 0 ? (
+                          searchResults.map((item) => (
+                            <Link
+                              key={item.id}
+                              href={`/product/${item.slug}`}
+                              className="block px-4 py-2 w-full text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => setSearchTerm("")}
+                            >
+                              {item.name}
+                            </Link>
+                          ))
+                        ) : (
+                          <p className="p-2 text-gray-500 text-sm">No results found</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Right: Cart & User - FIXED: Added proper dropdown menu */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setCartOpen(true)}
+                  className="relative p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+
+                {user ? (
+                  <div className="relative" ref={menuRef}>
+                    <Image
+                      src={user.profile || "/dokoo.png"}
+                      alt="user"
+                      width={30}
+                      height={30}
+                      className="rounded-full object-cover cursor-pointer"
+                      onClick={() => setMenuOpen(!menuOpen)}
+                    />
+                    {/* Mobile profile dropdown - FIXED: Added this dropdown */}
+                    {menuOpen && (
+                      <div className="absolute right-0 top-12 w-40 bg-white border rounded-lg shadow-md py-2 z-50">
+                        <Link
+                          href="/customer/profile"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          My Account
+                        </Link>
+                        <button
+                          onClick={() => {
+                            logout();
+                            setMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link href="/customer/login">
+                    <Button variant="outline" size="sm">Login</Button>
+                  </Link>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Desktop Logo + Navigation - EXACTLY AS BEFORE */}
+          {/* ✅ DESKTOP VIEW - Keep as is */}
           <div className="hidden lg:flex flex-1 items-center justify-center gap-3 md:gap-6">
             <Link href="/" className="flex items-center gap-2 shrink-0">
               <Image src="/logo.png" alt="Logo" width={35} height={35} className="cursor-pointer" />
@@ -143,15 +229,14 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
             </div>
           </div>
 
-          {/* Desktop Search + Cart + User - EXACTLY AS BEFORE */}
+          {/* Desktop Search + Cart + User */}
           <div className="hidden lg:flex flex-1 items-center justify-center gap-4">
-            {/* Search */}
             <div className="relative w-full max-w-md">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
               <input
                 type="text"
                 placeholder="Search products..."
-                className="w-full pl-10 pr-3 py-2 !bg-gray-50 text-black border rounded-full focus:outline-none text-sm"
+                className="w-full pl-10 pr-3 py-2 bg-gray-50 text-black border rounded-full focus:outline-none text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -183,7 +268,6 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
               )}
             </div>
 
-            {/* Cart Button */}
             <Button
               variant="ghost"
               className="h-8 px-3 flex items-center gap-2 relative cursor-pointer transition-colors"
@@ -197,18 +281,17 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
               )}
             </Button>
 
-            {/* User Menu */}
-            <div className="flex items-center gap-2 !cursor-pointer">
+            <div className="flex items-center gap-2 cursor-pointer">
               {user ? (
                 <div className="relative" ref={menuRef}>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 p-0 rounded-full overflow-hidden !cursor-pointer"
+                    className="h-8 w-8 p-0 rounded-full overflow-hidden cursor-pointer"
                     onClick={() => setMenuOpen(!menuOpen)}
                   >
                     <Image
-                      src={user.profile || "./dokoo.png"}
+                      src={user.profile || "/dokoo.png"}
                       alt={user.name}
                       width={32}
                       height={32}
@@ -230,7 +313,7 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
                           logout();
                           setMenuOpen(false);
                         }}
-                        className="!cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         Logout
                       </button>
@@ -239,130 +322,33 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
                 </div>
               ) : (
                 <Link href="/customer/login">
-                  <Button variant="outline" className="h-8 px-4 text-sm !cursor-pointer">
+                  <Button variant="outline" className="h-8 px-4 text-sm cursor-pointer">
                     Login
                   </Button>
                 </Link>
               )}
             </div>
           </div>
-
-          {/* Mobile/Tablet Right Section - Search + Cart */}
-          <div className="lg:hidden flex items-center gap-3 ml-auto">
-            <button 
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              onClick={() => setMobileOpen(true)}
-            >
-              <SearchIcon className="h-5 w-5" />
-            </button>
-
-            <Button
-              variant="ghost"
-              className="h-8 px-2 flex items-center gap-1 relative cursor-pointer transition-colors"
-              onClick={() => setCartOpen(true)}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
-          </div>
         </div>
 
-        {/* Mobile Dropdown */}
+        {/* ✅ MOBILE MENU (Dropdown Links) */}
         {mobileOpen && (
           <div className="lg:hidden flex flex-col gap-3 px-4 py-3 border-t bg-white animate-in slide-in-from-top duration-300">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="w-full pl-8 pr-3 py-2 !bg-gray-50 text-black border rounded-full focus:outline-none text-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-            </div>
-
-            {/* Search Results for Mobile */}
-            {(isSearching || searchResults.length > 0 || searchTerm) && (
-              <div className="w-full bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto z-50 flex flex-col items-center">
-                {isSearching ? (
-                  <div className="py-4">
-                    <div className="h-6 w-6 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>
-                  </div>
-                ) : (
-                  <>
-                    {searchResults.length > 0 ? (
-                      searchResults.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={`/product/${item.slug}`}
-                          className="block px-4 py-2 w-full text-sm text-gray-700 hover:bg-gray-100 border-b"
-                          onClick={() => {
-                            setSearchTerm("");
-                            setMobileOpen(false);
-                          }}
-                        >
-                          {item.name}
-                        </Link>
-                      ))
-                    ) : (
-                      <p className="p-2 text-gray-500 text-sm">No results found</p>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
-            <div className="flex flex-col gap-2 mt-3">
-              {links.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="block text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
-                >
-                  {link.name}
-                </Link>
-              ))}
-
-              {/* User Section for Mobile */}
-              {user ? (
-                <>
-                  <Link
-                    href="/customer/profile"
-                    onClick={() => setMobileOpen(false)}
-                    className="block text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
-                  >
-                    My Account
-                  </Link>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setMobileOpen(false);
-                    }}
-                    className="!cursor-pointer w-full text-left text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <Link
-                  href="/customer/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="block text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
-                >
-                  Login
-                </Link>
-              )}
-            </div>
+            {links.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="block text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-md"
+              >
+                {link.name}
+              </Link>
+            ))}
           </div>
         )}
       </nav>
 
-      {/* Cart Sidebar - Same as before */}
+      {/* ✅ CART SIDEBAR (unchanged) */}
       {cartOpen && (
         <div className="fixed inset-0 z-50">
           <div
@@ -442,7 +428,6 @@ const updateQuantity = (item: CartItem, newQuantity: number) => {
                   </button>
                 </div>
               )}
-
             </div>
           </div>
         </div>

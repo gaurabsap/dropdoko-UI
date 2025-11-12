@@ -143,7 +143,7 @@ export default function AuthPage() {
         <motion.div
           animate={{ x: isLogin ? 0 : "100%" }}
           transition={{ duration: 0.6, ease: "easeInOut" }}
-          className="absolute top-0 left-0 w-1/2 h-full flex items-center justify-center p-6 z-10 hidden md:flex"
+          className="absolute top-0 left-0 w-1/2 h-full flex items-center justify-center p-6 z-10 hidden lg:flex"
         >
           <motion.div animate={{ scale: isLogin ? 1 : 0.95 }} transition={{ duration: 0.4 }}>
             <div className={`w-[680px] h-[580px] transition-transform duration-500 ${isLogin ? "rotate-[8deg]" : "rotate-[-20deg]"}`}>
