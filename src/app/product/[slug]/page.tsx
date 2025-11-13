@@ -23,7 +23,7 @@ interface Review {
 }
 
 interface Product {
-  id: string;
+  _id: string;
   name: string;
   price: number;
   description: string;
@@ -271,7 +271,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ slug:
           <p className="text-gray-500">No reviews yet.</p>
         )}
 
-        <ReviewForm productId={product.id} productSlug={product.slug} />
+        <ReviewForm productId={product._id} productSlug={product.slug} />
       </div>
     </div>
   );
