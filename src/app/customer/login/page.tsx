@@ -211,7 +211,7 @@ export default function AuthPage() {
                   <span className="cursor-pointer text-orange-500 hover:text-orange-700 transition-colors" onClick={() => setIsLogin(false)}>
                     Create an account
                   </span>
-                  <span className="cursor-pointer text-orange-500 hover:text-orange-700 transition-colors">Forgot password</span>
+                  <span onClick={() => router.push("/customer/forgot-password")} className="cursor-pointer text-orange-500 hover:text-orange-700 transition-colors">Forgot password</span>
                 </div>
               </motion.div>
             ) : (
