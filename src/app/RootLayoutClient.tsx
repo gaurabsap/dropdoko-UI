@@ -16,7 +16,12 @@ export default function RootLayoutClient({
     <>
       {!isAdmin && <Navbar />}
       {children}
-      {!isAdmin && <Footer />}
+      {/* Hide footer on mobile + tablet (only show on large screens) */}
+      {!isAdmin && (
+        <div className="hidden lg:block">
+          <Footer />
+        </div>
+      )}
     </>
   );
 }
