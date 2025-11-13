@@ -174,7 +174,7 @@ export default function CheckoutSuccessPage() {
                 <p className="text-2xl font-bold tracking-wider">{order.trackingId}</p>
               </div>
               <Link
-                href={`customer/tracking/${order.trackingId}`}
+                href={`/customer/tracking/${order.trackingId}`}
                 className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-2xl font-semibold transition-all duration-300 border border-white/30 hover:border-white/50"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
