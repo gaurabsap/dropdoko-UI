@@ -15,14 +15,12 @@ export default function ProductGallery({
   name = "product",
 }: ProductGalleryProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const galleryWithMain = [ { url: mainImage }, ...gallery ];
+  const galleryWithMain = [{ url: mainImage }, ...gallery];
 
-  // image / fade states
   const [selected, setSelected] = useState<string>(mainImage || "/placeholder.png");
   const [prevImg, setPrevImg] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(true);
 
-  // zoom states
   const [isHovering, setIsHovering] = useState(false);
   const targetRef = useRef({ x: 50, y: 50 });
   const lastRef = useRef({ x: 50, y: 50 });
@@ -30,7 +28,24 @@ export default function ProductGallery({
   const [bgPos, setBgPos] = useState({ x: 50, y: 50 });
   const zoomScale = 2.0;
 
+  // Mobile state
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  // Check screen size on mount and resize
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobileView(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
   function onMouseMove(e: React.MouseEvent) {
+    if (isMobileView) return; // Disable hover effects on mobile
+    
     const el = containerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -87,6 +102,13 @@ export default function ProductGallery({
     }
   }
 
+  // Touch events for mobile
+  function handleTouchStart() {
+    if (isMobileView) {
+      setIsHovering(false); // Ensure hover effects are disabled on touch devices
+    }
+  }
+
   useEffect(() => {
     if (mainImage && mainImage !== selected) {
       setSelected(mainImage);
@@ -96,89 +118,100 @@ export default function ProductGallery({
   }, [mainImage]);
 
   return (
-    <div className="flex flex-col relative">
-      {/* Main image container */}
-      <div
-        className="relative w-full max-w-md aspect-square border rounded-lg overflow-hidden"
-        ref={containerRef}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={handleMouseLeave}
-        onMouseMove={onMouseMove}
-      >
-        {/* Previous image (fades out) */}
-        {prevImg && (
+    <div className="flex flex-col w-full max-w-lg mx-auto relative">
+      {/* Main image container with relative positioning */}
+      <div className="relative">
+        <div
+          className="relative w-full aspect-square border rounded-lg overflow-hidden"
+          ref={containerRef}
+          onMouseEnter={() => !isMobileView && setIsHovering(true)}
+          onMouseLeave={handleMouseLeave}
+          onMouseMove={onMouseMove}
+          onTouchStart={handleTouchStart}
+        >
+          {prevImg && (
+            <Image
+              src={prevImg}
+              alt={name + " prev"}
+              fill
+              draggable={false}
+              className="object-cover transition-opacity duration-200"
+              style={{ opacity: loaded ? 0 : 1 }}
+            />
+          )}
           <Image
-            src={prevImg}
-            alt={name + " prev"}
-            draggable={false}
+            src={selected}
+            alt={name}
             fill
+            draggable={false}
+            onLoad={handleSelectedLoad}
             className="object-cover transition-opacity duration-200"
-            style={{ opacity: loaded ? 0 : 1 }}
+            style={{ opacity: loaded ? 1 : 0 }}
           />
-        )}
+          {/* Zoom lens - only on desktop */}
+          {isHovering && (
+            <div
+              aria-hidden
+              className="hidden md:block pointer-events-none absolute w-16 h-16 rounded-full border-2 border-white/70 shadow-lg bg-white/5"
+              style={{
+                left: `${bgPos.x}%`,
+                top: `${bgPos.y}%`,
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          )}
+        </div>
 
-        {/* Selected image (fades in) */}
-        <Image
-          src={selected}
-          alt={name}
-          draggable={false}
-          fill
-          onLoad={handleSelectedLoad}
-          className="object-cover transition-opacity duration-200"
-          style={{ opacity: loaded ? 1 : 0 }}
-        />
-
-        {/* Zoom lens */}
+        {/* Zoom preview - positioned to the right, only on desktop */}
         {isHovering && (
           <div
-            aria-hidden
+            className="hidden md:block pointer-events-none absolute top-0 left-full ml-4 w-120 h-120 border rounded-lg bg-white shadow-xl z-50 overflow-hidden"
             style={{
-              left: `${bgPos.x}%`,
-              top: `${bgPos.y}%`,
-              transform: "translate(-50%, -50%)",
+              backgroundImage: `url("${selected}")`,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: `${zoomScale * 100}%`,
+              backgroundPosition: `${bgPos.x}% ${bgPos.y}%`,
             }}
-            className="hidden md:block pointer-events-none absolute w-16 h-16 rounded-full border-2 border-white/70 shadow-lg bg-white/5"
           />
         )}
       </div>
 
-      {/* Zoom preview */}
-      <div
-        className="absolute top-0 left-[420px] w-[700px] h-[600px] border rounded-lg hidden md:block overflow-hidden bg-orange-50 shadow-lg z-10"
-        style={{
-          opacity: isHovering ? 1 : 0,
-          transition: "opacity 160ms ease",
-          backgroundImage: `url("${selected}")`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: `${zoomScale * 100}%`,
-          backgroundPosition: `${bgPos.x}% ${bgPos.y}%`,
-          willChange: "background-position, opacity",
-        }}
-      />
+      {/* Gallery thumbnails - responsive sizing */}
+      <div className="flex gap-2 md:gap-3 mt-4 md:mt-6 overflow-x-auto px-1 md:px-2">
+        {galleryWithMain.map((img, idx) => (
+          <button
+            key={idx}
+            onClick={() => changeImage(img.url)}
+            type="button"
+            className={`flex-shrink-0 rounded-lg overflow-hidden border transition-colors ${
+              img.url === selected 
+                ? "border-orange-500 ring-2 ring-orange-200" 
+                : "border-gray-200 hover:border-gray-300"
+            } 
+            /* Mobile first sizing */
+            w-20 h-20 
+            /* Tablet sizing */
+            md:w-16 md:h-16
+            /* Large screens */
+            lg:w-18 lg:h-18`}
+          >
+            <Image
+              src={img.url}
+              alt={`${name} thumb ${idx}`}
+              width={80}
+              height={80}
+              className="object-cover w-full h-full"
+              draggable={false}
+            />
+          </button>
+        ))}
+      </div>
 
-      {/* Gallery thumbnails */}
-      {galleryWithMain && galleryWithMain.length > 0 ? (
-        <div className="flex gap-2 mt-2">
-          {gallery.map((img, idx) => (
-            <button
-              key={idx}
-              onClick={() => changeImage(img.url)}
-              className={`w-16 h-16 rounded-lg overflow-hidden border ${img.url === selected ? "border-orange-500" : "border-gray-200"}`}
-              type="button"
-            >
-              <Image
-                src={img.url}
-                alt={`${name} thumb ${idx}`}
-                width={64}
-                height={64}
-                className="object-cover"
-                draggable={false}
-              />
-            </button>
-          ))}
+      {/* Mobile indicator (optional - for debugging) */}
+      {isMobileView && (
+        <div className="md:hidden text-xs text-gray-500 text-center mt-2">
+          Tap thumbnails to change image
         </div>
-      ) : (
-        <p className="text-gray-500 text-sm">No additional images available</p>
       )}
     </div>
   );

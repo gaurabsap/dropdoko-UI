@@ -5,9 +5,11 @@ import { ShoppingCart } from "lucide-react";
 import { toast } from "react-toastify";
 import { useCart } from "./context/CartContext";
 import { useUser } from "./context/userContext";
+import { useRouter } from "next/navigation";
 
+// Inside AddToCartButton
 interface Product {
-  id: string;
+  _id: string;
   name: string;
   price: number;
   stock: number;
@@ -19,28 +21,43 @@ interface Props {
 }
 
 export default function AddToCartButton({ product }: Props) {
+  const router = useRouter();
+
   const { addToCart } = useCart();
   const { user } = useUser();
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const increase = () => {
-    if (quantity < product.stock) setQuantity(quantity + 1);
-    else toast.info(`Only ${product.stock} item(s) in stock.`);
+  const increase = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Increase clicked");
+    if (quantity < product.stock) {
+      setQuantity(quantity + 1);
+    } else {
+      toast.info(`Only ${product.stock} item(s) in stock.`);
+    }
   };
 
-  const decrease = () => {
+  const decrease = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Decrease clicked");
     if (quantity > 1) setQuantity(quantity - 1);
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Add to cart clicked");
+    
     if (!user) return toast.info("Please log in to add items to cart");
-    if (product.stock === 0) return toast.error("Product out of stock");
+    if (!product.stock || product.stock === 0) return toast.error("Product out of stock");
 
     setLoading(true);
     try {
       await addToCart({
-        id: product.id,
+        id: product._id,
         name: product.name,
         price: product.price,
         imageUrl: product.images[0]?.url || "",
@@ -48,22 +65,41 @@ export default function AddToCartButton({ product }: Props) {
       });
       toast.success(`${quantity} x ${product.name} added to cart.`);
     } catch (err) {
-      console.error(err);
+      console.error("Add to cart error:", err);
       toast.error("Failed to add to cart");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleBuyNow = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+if (!user) return toast.info("Please log in to buy items");
+
+  if (!product.stock || product.stock === 0) return toast.error("Product out of stock");
+
+  try {
+
+ router.push(
+    `/customer/checkout?buyNow=true&productId=${product._id}&quantity=${quantity}`
+  );
+  } catch (err) {
+    console.error("Buy now error:", err);
+    toast.error("Failed to proceed to checkout");
+  }
+  };
+
   return (
     <div className="flex flex-col gap-3 mt-4 w-max">
       {/* Quantity row */}
-      <div className="flex items-center border rounded-md overflow-hidden">
-        Quantity
+      <div className="flex items-center rounded-md overflow-hidden">
+        <span className="px-3">Quantity</span>
         <button
           onClick={decrease}
           disabled={quantity <= 1}
-          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 transition disabled:opacity-50"
+          className="px-4 py-2 cursor-pointer bg-gray-300 hover:bg-gray-200 transition disabled:opacity-50"
+          type="button"
         >
           -
         </button>
@@ -71,7 +107,8 @@ export default function AddToCartButton({ product }: Props) {
         <button
           onClick={increase}
           disabled={quantity >= product.stock}
-          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 transition disabled:opacity-50"
+          className="px-4 py-2 bg-gray-300 hover:bg-gray-200 transition disabled:opacity-50"
+          type="button"
         >
           +
         </button>
@@ -80,15 +117,17 @@ export default function AddToCartButton({ product }: Props) {
       {/* Buttons row */}
       <div className="flex gap-2">
         <button
-          onClick={() => toast.info("Buy Now clicked")}
-          className="bg-orange-500 text-white px-6 py-2 rounded-md  font-medium hover:bg-orange-600 transition"
+          onClick={handleBuyNow}
+          className="bg-orange-500 text-white px-6 py-2 rounded-md font-medium hover:bg-orange-600 transition"
+          type="button"
         >
           Buy Now
         </button>
         <button
           onClick={handleAddToCart}
-          disabled={loading || product.stock === 0}
-          className="flex items-center gap-2 px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-md transition disabled:opacity-50"
+          disabled={!product.stock || loading}
+          className="flex items-center gap-2 px-6 py-2 text-orange-600 border-1 border-orange-600 hover:bg-orange-100 font-semibold rounded-md transition disabled:opacity-50"
+          type="button"
         >
           {loading ? "Adding..." : <><ShoppingCart size={18} /> Add to Cart</>}
         </button>

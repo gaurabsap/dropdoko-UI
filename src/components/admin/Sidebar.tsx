@@ -65,7 +65,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
     try {
       await logout();
       // You might want to redirect after logout
-      // window.location.href = '/login';
+      window.location.href = '/login';
     } catch (error) {
       console.error("Logout failed:", error);
     }

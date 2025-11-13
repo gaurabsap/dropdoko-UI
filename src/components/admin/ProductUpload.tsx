@@ -22,7 +22,7 @@ export default function ProductUpload({ existingProduct, onSubmit }: Props) {
     category: "",
     description: "",
     price: "",
-    discountedPrice: "",
+    discountPercentage: 0,
     stock: 0,
     keyFeatures: [] as string[],
     technicalSpecifications: [] as TechSpec[],
@@ -49,7 +49,7 @@ export default function ProductUpload({ existingProduct, onSubmit }: Props) {
         category: existingProduct.category || "",
         description: existingProduct.description || "",
         price: existingProduct.price || "",
-        discountedPrice: existingProduct.discountedPrice || "",
+        discountPercentage: existingProduct.discountPercentage || 0,
         stock: existingProduct.stock || 0,
         keyFeatures: existingProduct.keyFeatures || [],
         technicalSpecifications: existingProduct.technicalSpecifications || [],
@@ -222,7 +222,7 @@ export default function ProductUpload({ existingProduct, onSubmit }: Props) {
           category: "",
           description: "",
           price: "",
-          discountedPrice: "",
+          discountPercentage: 0,
           stock: 0,
           keyFeatures: [],
           technicalSpecifications: [],
@@ -317,16 +317,16 @@ export default function ProductUpload({ existingProduct, onSubmit }: Props) {
             className="w-full border border-orange-200 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
             placeholder="0.00"
           />
-        </div>
+        </div>        
         <div>
-          <label className="block text-sm font-medium text-orange-700 mb-1">Discounted Price</label>
+          <label className="block text-sm font-medium text-orange-700 mb-1">Discount %</label>
           <input
             type="number"
-            name="discountedPrice"
-            value={productData.discountedPrice}
+            name="discountPercentage"
+            value={productData.discountPercentage}
             onChange={handleChange}
             className="w-full border border-orange-200 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
-            placeholder="0.00"
+            placeholder="0"
           />
         </div>
         <div>
