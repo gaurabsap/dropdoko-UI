@@ -34,11 +34,11 @@ export default function RootLayout({
         <Providers>
           <RootLayoutClient>{children}</RootLayoutClient>
         </Providers>
-        <Script
+        {/* <Script
           strategy="afterInteractive"
           src="https://embed.tawk.to/68c54acd2d363c192cbad9ed/1j51aode3"
           crossOrigin="anonymous"
-        />
+        /> */}
       </body>
     </html>
   );
