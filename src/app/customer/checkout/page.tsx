@@ -627,153 +627,169 @@ export default function Checkout() {
       </div>
 
       {/* Add Address Modal */}
-      {showAddressForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-12">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[100vh] overflow-y-auto">
-            <div className="p-6 border-b border-orange-200 flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-orange-900">Add New Address</h2>
-              <button onClick={() => setShowAddressForm(false)} className="text-orange-500 hover:text-orange-700">
-                <X size={24} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmitAddress} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-orange-900 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-orange-900 mb-1">Phone Number</label>
-                <input
-                  type="tel"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-orange-900 mb-1">Landmark (optional)</label>
-                <input
-                  type="text"
-                  name="landmark"
-                  value={formData.landmark}
-                  onChange={handleInputChange}
-                  placeholder="Eg: Beside Birendra Campus"
-                  className="w-full px-4 py-2 border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                />
-              </div>
+     {showAddressForm && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg md:max-w-2xl overflow-y-auto max-h-[90vh] relative">
+      <button
+        onClick={() => setShowAddressForm(false)}
+        className="absolute top-4 right-4 text-orange-600 hover:text-orange-700 transition"
+      >
+        <X size={24} />
+      </button>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-orange-900 mb-1">Province / Region</label>
-                  <select
-                    value={formData.province.id}
-                    onChange={(e) => handleSelectChange(e, 'province')}
-                    required
-                    className="w-full px-4 py-2 border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  >
-                    <option value="">Select province</option>
-                    {provinceList.map((province: any) => (
-                      <option key={province.id} value={province.id}>
-                        {province.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+      <form
+        onSubmit={handleSubmitAddress}
+        className="p-6 md:p-8 space-y-4 md:space-y-6"
+      >
+        <h2 className="text-2xl font-semibold text-orange-900 mb-4">
+          Add New Address
+        </h2>
 
-                <div>
-                  <label className="block text-sm font-medium text-orange-900 mb-1">City</label>
-                  <select
-                    value={formData.city.id}
-                    onChange={(e) => handleSelectChange(e, 'city')}
-                    required
-                    disabled={!formData.province.id}
-                    className="w-full px-4 py-2 border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  >
-                    <option value="">Select city</option>
-                    {cityList.map((city: any) => (
-                      <option key={city.id} value={city.id}>
-                        {city.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-orange-900 mb-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              required
+              className="w-full border border-orange-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-orange-900 mb-1">Zone</label>
-                  <select
-                    value={formData.zone.id}
-                    onChange={(e) => handleSelectChange(e, 'zone')}
-                    required
-                    disabled={!formData.city.id}
-                    className="w-full px-4 py-2 border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  >
-                    <option value="">Select zone</option>
-                    {zoneList.map((zone: any) => (
-                      <option key={zone.id} value={zone.id}>
-                        {zone.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-orange-900 mb-1">Address</label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    placeholder="Manocranti tol"
-                    required
-                    className="w-full px-4 py-2 border border-orange-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="isDefault"
-                  checked={formData.isDefault}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-orange-300 rounded"
-                />
-                <label className="ml-2 text-sm text-orange-900">Set as default address</label>
-              </div>
-              
-              <div className="flex gap-3 pt-4">
-                <Button
-                  type="button"
-                  onClick={() => setShowAddressForm(false)}
-                  className="flex-1 bg-orange-100 text-orange-700 hover:bg-orange-200"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
-                >
-                  Save Address
-                </Button>
-              </div>
-            </form>
+          <div>
+            <label className="block text-sm font-medium text-orange-900 mb-1">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleInputChange}
+              required
+              className="w-full border border-orange-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
           </div>
         </div>
-      )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-orange-900 mb-1">
+              Province
+            </label>
+            <select
+              value={formData.province.id}
+              onChange={(e) => handleSelectChange(e, "province")}
+              required
+              className="w-full border border-orange-200 rounded-xl px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+            >
+              <option value="">Select Province</option>
+              {provinceList.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-orange-900 mb-1">
+              City
+            </label>
+            <select
+              value={formData.city.id}
+              onChange={(e) => handleSelectChange(e, "city")}
+              required
+              disabled={!cityList.length}
+              className="w-full border border-orange-200 rounded-xl px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:bg-orange-50"
+            >
+              <option value="">Select City</option>
+              {cityList.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-orange-900 mb-1">
+              Zone
+            </label>
+            <select
+              value={formData.zone.id}
+              onChange={(e) => handleSelectChange(e, "zone")}
+              required
+              disabled={!zoneList.length}
+              className="w-full border border-orange-200 rounded-xl px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:bg-orange-50"
+            >
+              <option value="">Select Zone</option>
+              {zoneList.map((z) => (
+                <option key={z.id} value={z.id}>{z.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-orange-900 mb-1">
+            Address Line
+          </label>
+          <input
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleInputChange}
+            required
+            className="w-full border border-orange-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-orange-900 mb-1">
+            Landmark (optional)
+          </label>
+          <input
+            type="text"
+            name="landmark"
+            value={formData.landmark}
+            onChange={handleInputChange}
+            className="w-full border border-orange-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="isDefault"
+            checked={formData.isDefault}
+            onChange={handleInputChange}
+            className="h-5 w-5 text-orange-500 focus:ring-orange-400 border-orange-300 rounded"
+          />
+          <label className="text-orange-900 text-sm font-medium">
+            Set as default address
+          </label>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-3 justify-end pt-4">
+          <Button
+            type="button"
+            onClick={() => setShowAddressForm(false)}
+            className="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-orange-900 px-5 py-2 rounded-xl font-medium"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-5 py-2 rounded-xl font-medium shadow-md"
+          >
+            Save Address
+          </Button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
