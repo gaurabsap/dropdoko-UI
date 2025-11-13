@@ -11,7 +11,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useUser } from "@/components/context/userContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,8 +25,19 @@ const links = [
 
 export default function ProfileLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { logout } = useUser();
+  const { user, logout  } = useUser();
   const [open, setOpen] = useState(false);
+  const [isOauthUser, setIsOauthUser] = useState<boolean>(false);
+
+
+    useEffect(() => {
+    if (user?.isSocialLogin) setIsOauthUser(true);
+  }, [user]);
+
+
+  const filteredLinks = isOauthUser
+  ? links.filter((link) => link.name !== "Security")
+  : links;
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#FDFCFB]">
@@ -50,7 +61,7 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
         <h2 className="text-xl font-bold mb-6">My Account</h2>
 
         <nav className="space-y-2">
-          {links.map((link) => {
+          {filteredLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
 

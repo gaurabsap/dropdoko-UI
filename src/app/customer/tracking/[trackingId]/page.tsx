@@ -349,32 +349,64 @@ export default function TrackingPage() {
               {/* Shipping Information */}
               <div className="space-y-4">
                 <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  <svg
+                    className="w-5 h-5 text-orange-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                    />
                   </svg>
                   Shipping Address
                 </h3>
-                <div className="bg-orange-50 rounded-2xl p-6 border border-orange-100">
-                  <p className="font-semibold text-gray-800 text-lg mb-2">
-                    {trackingData.shippingAddress.fullName}
-                  </p>
-                  <p className="text-gray-600 leading-relaxed">
-                    {trackingData.shippingAddress.addressLine}, {trackingData.shippingAddress.zone}<br />
-                    {trackingData.shippingAddress.city}, {trackingData.shippingAddress.province}
-                    {trackingData.shippingAddress.landmark && (
-                      <>
-                        <br />
-                        <span className="text-sm text-gray-500">
-                          Landmark: {trackingData.shippingAddress.landmark}
-                        </span>
-                      </>
+
+                {trackingData?.shippingAddress ? (
+                  <div className="bg-orange-50 rounded-2xl p-6 border border-orange-100">
+                    {trackingData.shippingAddress.fullName ? (
+                      <p className="font-semibold text-gray-800 text-lg mb-2">
+                        {trackingData.shippingAddress.fullName}
+                      </p>
+                    ) : (
+                      <p className="text-gray-500 italic mb-2">No name provided</p>
                     )}
-                  </p>
-                  <p className="text-gray-600 mt-3">
-                    📞 {trackingData.shippingAddress.phoneNumber}
-                  </p>
-                </div>
+
+                    <p className="text-gray-600 leading-relaxed">
+                      {trackingData.shippingAddress.addressLine
+                        ? trackingData.shippingAddress.addressLine
+                        : "No address line"}
+                      {trackingData.shippingAddress.zone && `, ${trackingData.shippingAddress.zone}`}
+                      {trackingData.shippingAddress.city && <><br />{trackingData.shippingAddress.city}</>}
+                      {trackingData.shippingAddress.province && `, ${trackingData.shippingAddress.province}`}
+
+                      {trackingData.shippingAddress.landmark && (
+                        <>
+                          <br />
+                          <span className="text-sm text-gray-500">
+                            Landmark: {trackingData.shippingAddress.landmark}
+                          </span>
+                        </>
+                      )}
+                    </p>
+
+                    <p className="text-gray-600 mt-3">
+                      📞{" "}
+                      {trackingData.shippingAddress.phoneNumber
+                        ? trackingData.shippingAddress.phoneNumber
+                        : "No phone number"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 text-gray-500 italic">
+                    Shipping address not available.
+                  </div>
+                )}
               </div>
+
 
               {/* Order Summary */}
               <div className="space-y-4">

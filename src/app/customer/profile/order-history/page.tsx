@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -80,50 +79,73 @@ export default function OrderHistoryPage() {
           <thead className="bg-orange-50">
             <tr className="border-b">
               <th className="px-6 py-4 font-semibold">Order ID</th>
-              <th className="px-6 py-4 font-semibold">Customer</th>
               <th className="px-6 py-4 font-semibold">Date</th>
               <th className="px-6 py-4 font-semibold">Amount</th>
               <th className="px-6 py-4 font-semibold">Items</th>
               <th className="px-6 py-4 font-semibold">Payment</th>
               <th className="px-6 py-4 font-semibold">Status</th>
-              <th className="px-6 py-4 font-semibold"></th>
+              <th className="px-6 py-4 font-semibold text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               [...Array(5)].map((_, idx) => (
                 <tr key={idx} className="border-b animate-pulse">
-                  {Array(8).fill(0).map((_, i) => (
-                    <td key={i} className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-20"></div></td>
-                  ))}
+                  {Array(7)
+                    .fill(0)
+                    .map((_, i) => (
+                      <td key={i} className="px-6 py-4">
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      </td>
+                    ))}
                 </tr>
               ))
             ) : filteredOrders.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-8 text-gray-500">
+                <td colSpan={7} className="text-center py-8 text-gray-500">
                   No orders found.
                 </td>
               </tr>
             ) : (
               filteredOrders.map((order: any) => {
                 const statusLabel = normalizeStatus(order.deliveryStatus);
-                const itemCount = order.items?.reduce((acc: number, i: any) => acc + i.quantity, 0);
+                const itemCount = order.items?.reduce(
+                  (acc: number, i: any) => acc + i.quantity,
+                  0
+                );
                 return (
-                  <tr key={order._id} className="border-b hover:bg-orange-50 transition-colors">
+                  <tr
+                    key={order._id}
+                    className="border-b hover:bg-orange-50 transition-colors"
+                  >
                     <td className="px-6 py-4">{order._id}</td>
-                    <td className="px-6 py-4">{order.shippingAddress?.fullName || "—"}</td>
-                    <td className="px-6 py-4">{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </td>
                     <td className="px-6 py-4">Rs. {order.totalAmount}</td>
                     <td className="px-6 py-4">{itemCount}</td>
-                    <td className="px-6 py-4 capitalize">{order.paymentMethod}</td>
+                    <td className="px-6 py-4 capitalize">
+                      {order.paymentMethod}
+                    </td>
                     <td className="px-6 py-4">{statusLabel}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => router.push(`/customer/profile/order-history/${order._id}`)}
-                        className="text-orange-500 font-medium hover:underline"
-                      >
-                        View Details →
-                      </button>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex justify-center items-center gap-4">
+                        <button
+                          onClick={() => router.push(`/customer/tracking/${order.trackingId}`)}
+                          className="text-sm text-orange-600 font-medium hover:text-orange-700 hover:underline transition"
+                        >
+                          Track
+                        </button>
+                        <div className="w-[1px] h-4 bg-gray-300"></div>
+                        <button
+                          onClick={() =>
+                            router.push(`/customer/profile/order-history/${order._id}`)
+                          }
+                          className="text-sm text-gray-700 font-medium hover:text-gray-900 hover:underline transition"
+                        >
+                          Details
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -137,40 +159,74 @@ export default function OrderHistoryPage() {
       <div className="sm:hidden space-y-4">
         {loading
           ? [...Array(5)].map((_, idx) => (
-              <div key={idx} className="p-4 bg-white rounded-2xl shadow animate-pulse space-y-2"></div>
+              <div
+                key={idx}
+                className="p-4 bg-white rounded-2xl shadow animate-pulse space-y-2"
+              ></div>
             ))
           : filteredOrders.length === 0
-          ? <p className="text-center text-gray-500 mt-8">No orders found.</p>
+          ? (
+            <p className="text-center text-gray-500 mt-8">No orders found.</p>
+          )
           : filteredOrders.map((order) => {
               const statusLabel = normalizeStatus(order.deliveryStatus);
-              const itemCount = order.items?.reduce((acc: number, i: any) => acc + i.quantity, 0);
+              const itemCount = order.items?.reduce(
+                (acc: number, i: any) => acc + i.quantity,
+                0
+              );
               return (
                 <div
                   key={order._id}
                   className="bg-white rounded-2xl shadow p-4 flex flex-col space-y-2 hover:shadow-lg transition"
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-800">{order._id}</span>
-                    <span className={cn(
-                      "text-xs font-semibold px-2 py-1 rounded-full",
-                      statusLabel === "Delivered" ? "bg-green-100 text-green-700"
-                      : statusLabel === "Shipped" ? "bg-blue-100 text-blue-700"
-                      : statusLabel === "Cancelled" ? "bg-red-100 text-red-700"
-                      : "bg-yellow-100 text-yellow-700"
-                    )}>
+                    <span className="font-semibold text-gray-800">
+                      {order._id}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-xs font-semibold px-2 py-1 rounded-full",
+                        statusLabel === "Delivered"
+                          ? "bg-green-100 text-green-700"
+                          : statusLabel === "Shipped"
+                          ? "bg-blue-100 text-blue-700"
+                          : statusLabel === "Cancelled"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      )}
+                    >
                       {statusLabel}
                     </span>
                   </div>
-                  <div className="text-gray-600 text-sm">{order.shippingAddress?.fullName}</div>
-                  <div className="text-gray-600 text-sm">{new Date(order.createdAt).toLocaleDateString()}</div>
-                  <div className="text-gray-800 font-medium">Rs. {order.totalAmount}</div>
+
+                  <div className="text-gray-600 text-sm">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className="text-gray-800 font-medium">
+                    Rs. {order.totalAmount}
+                  </div>
+                  <div className="text-gray-600 text-sm">
+                    {itemCount} Items
+                  </div>
+
                   <div className="flex justify-between items-center mt-2">
-                    <span className="text-gray-600 text-sm">{itemCount} Items</span>
                     <button
-                      onClick={() => router.push(`/customer/profile/order-history/${order._id}`)}
-                      className="text-orange-500 font-medium hover:underline"
+                      onClick={() =>
+                        router.push(`/customer/tracking/${order.trackingId}`)
+                      }
+                      className="text-orange-500 text-sm font-medium hover:underline"
                     >
-                      View Details →
+                      Track
+                    </button>
+                    <button
+                      onClick={() =>
+                        router.push(
+                          `/customer/profile/order-history/${order._id}`
+                        )
+                      }
+                      className="text-gray-600 text-sm font-medium hover:underline"
+                    >
+                      Details →
                     </button>
                   </div>
                 </div>

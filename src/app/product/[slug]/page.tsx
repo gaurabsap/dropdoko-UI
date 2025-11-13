@@ -223,7 +223,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ slug:
           ))}
         </ul>
         
-        <h2 className="text-xl sm:text-2xl font-bold text-orange-500 mb-2">Customer Reviews</h2>
+        {/* <h2 className="text-xl sm:text-2xl font-bold text-orange-500 mb-2">Customer Reviews</h2>
         {totalReviews > 0 && (
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -253,10 +253,10 @@ export default async function ProductDetailPage(props: { params: Promise<{ slug:
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Review list */}
-        {product.reviews?.length ? (
+        {/* {product.reviews?.length ? (
           <ul className="space-y-6">
             {product.reviews.map((rev, i) => (
               <ReviewCard key={i} rev={{
@@ -269,9 +269,9 @@ export default async function ProductDetailPage(props: { params: Promise<{ slug:
           </ul>
         ) : (
           <p className="text-gray-500">No reviews yet.</p>
-        )}
+        )} */}
 
-        <ReviewForm productId={product._id} productSlug={product.slug} />
+        {/* <ReviewForm productId={product._id} productSlug={product.slug} /> */}
       </div>
     </div>
   );
