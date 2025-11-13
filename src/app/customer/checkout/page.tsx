@@ -389,8 +389,7 @@ export default function Checkout() {
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const shipping = 5.99;
-  const tax = subtotal * 0.1;
-  const total = subtotal + shipping + tax;
+  const total = subtotal + shipping
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -596,10 +595,6 @@ export default function Checkout() {
                 <div className="flex justify-between">
                   <span className="text-orange-700">Shipping</span>
                   <span className="text-orange-900 font-medium">Rs {shipping.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-orange-700">Tax (10%)</span>
-                  <span className="text-orange-900 font-medium">Rs {tax.toFixed(2)}</span>
                 </div>
               </div>
               
