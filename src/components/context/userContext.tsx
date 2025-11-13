@@ -16,6 +16,7 @@ type User = {
   profile?: string;
   role?: string;
   isVerified?: boolean;
+  isSocialLogin?: boolean;
 };
 
 type UserContextType = {
