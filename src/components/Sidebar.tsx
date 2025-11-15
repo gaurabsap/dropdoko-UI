@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { FiMenu, FiBox, FiClipboard, FiUser, FiHome } from "react-icons/fi";
+import { FiMenu, FiBox, FiClipboard, FiUser, FiHome, FiTag } from "react-icons/fi";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(true);
@@ -12,6 +12,7 @@ export default function Sidebar() {
     { name: "Products", href: "/products", icon: <FiBox /> },
     { name: "Orders", href: "/orders", icon: <FiClipboard /> },
     { name: "Users", href: "/users", icon: <FiUser /> },
+    { name: "Coupons", href: "/coupons", icon: <FiTag /> },
   ];
 
   return (
