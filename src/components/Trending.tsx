@@ -85,38 +85,55 @@ export default function Trending() {
           {loading
             ? Array.from({ length: 4 }).map((_, index) => <ProductSkeleton key={index} />)
             : products.map((product) => (
-                <div
-                  key={product.id}
-                  className="group flex flex-col items-center w-full max-w-[220px]"
-                >
-                  <Link href={`/product/${product.slug}`} className="w-full">
-                    <div className="relative aspect-square w-full rounded-xl overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105">
-                      <Image
-                        src={product.images[0].url}
-                        alt={product.name}
-                        width={500}
-                        height={500}
-                        unoptimized
-                        className="object-cover w-full h-full"
-                      />
-                      <div
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer bg-gray-800 text-white p-2 rounded-full shadow-md"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleAddToCart(product);
-                        }}
-                      >
-                        <ShoppingCart size={16} />
-                      </div>
+              <div
+                key={product.id}
+                className="flex flex-col gap-3 w-full max-w-[220px] p-3 border border-gray-300 rounded-xl shadow-md"
+              >
+                <Link href={`/product/${product.slug}`}>
+                  <div className="group relative aspect-square w-full rounded-xl overflow-hidden shadow-md">
+                    <Image
+                      src={product.images[0].url}
+                      alt={product.name}
+                      width={500}
+                      height={500}
+                      unoptimized
+                      className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer bg-gray-800 text-white p-2 rounded-full shadow-md"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAddToCart(product);
+                      }}
+                    >
+                      <ShoppingCart size={16} />
                     </div>
-                  </Link>
+                  </div>
+                </Link>
 
-                  <p className="mt-3 font-semibold text-sm md:text-base text-gray-800 text-center truncate w-full">
+                  <p className="mt-3 font-semibold text-xs sm:text-sm md:text-base text-gray-800 line-clamp-2">
                     {product.name}
                   </p>
-                </div>
-              ))}
+
+                  {/* Price */}
+                  <p className="text-start text-[#ED6E0A] font-bold text-sm sm:text-base">
+                    Rs. {product.price}
+                  </p>
+
+                  {/* Button */}
+                  <button
+                    className="px-3 py-2 w-full bg-[#ED6E0A] rounded-xl text-white text-xs sm:text-sm md:text-base hover:bg-orange-600 transition-colors duration-300"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAddToCart(product);
+                    }}
+                  >
+                    Add to cart
+                  </button>
+              </div>
+            ))}
         </div>
+
       </div>
     </section>
   );
