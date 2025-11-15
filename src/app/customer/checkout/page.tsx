@@ -133,7 +133,7 @@ const CheckoutSkeleton = () => {
 
 export default function Checkout() {
   const router = useRouter();
-  const { cart, addToCart, removeFromCart, clearCart } = useCart();
+  const { cart, addToCart, removeFromCart, clearCart, buyNowItem, clearBuyNowItem } = useCart();
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState("cod");
   const [selectedAddress, setSelectedAddress] = useState("");
@@ -158,6 +158,19 @@ export default function Checkout() {
   const [cityList, setCityList] = useState<any[]>([]);
   const [zoneList, setZoneList] = useState<any[]>([]);
 
+  // Track if we're in buy now mode - only set to true when we have a buyNowItem
+  const [isBuyNowMode, setIsBuyNowMode] = useState(false);
+
+  // Set buy now mode when component mounts or buyNowItem changes
+  useEffect(() => {
+    // Only set to buy now mode if we actually have a buyNowItem
+    if (buyNowItem) {
+      setIsBuyNowMode(true);
+    }
+  }, [buyNowItem]);
+
+  // Use buyNowItem if we're in buy now mode and it exists, otherwise use cart
+  const displayItems = isBuyNowMode ? (buyNowItem ? [buyNowItem] : []) : cart;
 
   const applyCoupon = async () => {
     try {
@@ -167,7 +180,7 @@ export default function Checkout() {
       }
       const res = await api.post("/coupons/validate", { code: couponCode });
       console.log(res.data.data)
-      if (res.data?.data.valid && res.data?.data.isActive) {
+      if (res.data?.data.valid) {
         const discountPercent = res.data.data.discount; // e.g., 10 means 10%
         setDiscount(discountPercent);
 
@@ -188,7 +201,6 @@ export default function Checkout() {
       setDiscountAmount(0);
     }
   };
-
 
   // Fetch addresses
   useEffect(() => {
@@ -273,11 +285,48 @@ export default function Checkout() {
     fetchZones();
   }, [formData.city]);
 
-  const updateQuantity = (item: typeof cart[0], newQty: number) => {
+  const updateQuantity = (item: any, newQty: number) => {
     if (newQty < 1) {
-      removeFromCart(item.id);
+      removeItem(item.id);
+      return;
+    }
+    
+    if (isBuyNowMode) {
+      // For buy now mode, we need to update the buyNowItem
+      // Since we don't have an update function in context, we'll redirect to refresh
+      clearBuyNowItem();
+      setTimeout(() => {
+        router.push('/checkout');
+      }, 100);
     } else {
+      // Normal cart update
       addToCart({ ...item, quantity: newQty - item.quantity });
+    }
+  };
+
+  const removeItem = (itemId: string) => {
+    if (isBuyNowMode) {
+      clearBuyNowItem();
+      // Redirect to products page to avoid showing cart items
+      setTimeout(() => {
+        router.push('/products');
+      }, 100);
+    } else {
+      removeFromCart(itemId);
+    }
+  };
+
+  const clearAllItems = () => {
+    if (isBuyNowMode) {
+      clearBuyNowItem();
+      // Redirect to products page to avoid showing cart items
+      setTimeout(() => {
+        router.push('/products');
+      }, 100);
+    } else {
+      if (confirm("Are you sure you want to delete all items from the cart?")) {
+        clearCart();
+      }
     }
   };
 
@@ -363,16 +412,15 @@ export default function Checkout() {
       return;
     }
 
-    if (!cart.length) {
-      toast.error("Your cart is empty");
+    if (!displayItems.length) {
+      toast.error(isBuyNowMode ? "No product selected" : "Your cart is empty");
       return;
     }
-    // const totalAfterDiscount = subtotal + shipping - discountAmount;
 
     try {
       // Prepare payload for the backend
       const payload = {
-        items: cart.map(item => ({
+        items: displayItems.map(item => ({
           name: item.name,
           product: item.id,
           quantity: item.quantity,
@@ -389,7 +437,12 @@ export default function Checkout() {
       // Hit your backend API to create the order
       const res = await api.post("/order/create", payload);
       if (res.data.data && res.data.data._id) {
-        clearCart();
+        // Clear the appropriate items based on mode
+        if (isBuyNowMode) {
+          clearBuyNowItem();
+        } else {
+          clearCart();
+        }
         toast.success("Order placed successfully!");
         router.replace(`/customer/checkout/success?orderId=${res.data.data._id}`);
       } else {
@@ -401,20 +454,45 @@ export default function Checkout() {
     }
   };
 
-
   if (loading) {
     return <CheckoutSkeleton />;
   }
 
-  if (!cart.length) {
+  // Check if we should show empty state
+  const shouldShowEmptyState = displayItems.length === 0;
+
+  if (shouldShowEmptyState) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center py-10 px-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-orange-200">
           <div className="bg-gradient-to-r from-orange-100 to-amber-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingBag className="h-12 w-12 text-orange-500" />
           </div>
-          <h1 className="text-3xl font-bold text-orange-900 mb-4">Your Cart is Empty</h1>
-          <p className="text-orange-700 mb-6">Looks like you havent added anything to your cart yet.</p>
+          <h1 className="text-3xl font-bold text-orange-900 mb-4">
+            {isBuyNowMode ? "No Product Selected" : "Your Cart is Empty"}
+          </h1>
+          <p className="text-orange-700 mb-6">
+            {isBuyNowMode 
+              ? "Looks like your buy now item was removed." 
+              : "Looks like you haven't added anything to your cart yet."}
+          </p>
+          
+          {/* Show switch to cart button if we have cart items but are in empty buy now mode */}
+          {isBuyNowMode && cart.length > 0 && (
+            <div className="mb-4">
+              <p className="text-orange-600 mb-2">You have items in your cart.</p>
+              <Button 
+                onClick={() => {
+                  setIsBuyNowMode(false);
+                  clearBuyNowItem();
+                }}
+                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-6 py-2 rounded-full font-medium mb-2"
+              >
+                Switch to Cart Items
+              </Button>
+            </div>
+          )}
+          
           <Link href="/">
             <Button className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-6 py-3 rounded-full font-medium flex items-center gap-2 mx-auto shadow-md hover:shadow-lg transition-all">
               <ArrowLeft size={18} />
@@ -426,17 +504,48 @@ export default function Checkout() {
     );
   }
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = displayItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const shipping = 110;
-const discountAmountValue = +(subtotal * (discount / 100)).toFixed(2);
+  const discountAmountValue = +(subtotal * (discount / 100)).toFixed(2);
   const totalAfterDiscount = +(subtotal + shipping - discountAmountValue).toFixed(2);
 
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-6xl mx-auto">
+        {/* Buy Now Mode Banner */}
+        {isBuyNowMode && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-green-100 p-2 rounded-full">
+                <CreditCard className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-green-800">Buy Now Purchase</h3>
+                <p className="text-green-600 text-sm">You're purchasing this item directly without adding to cart.</p>
+              </div>
+              {/* Show switch to cart button in banner if we have cart items */}
+              {cart.length > 0 && (
+                <Button 
+                  onClick={() => {
+                    setIsBuyNowMode(false);
+                    clearBuyNowItem();
+                  }}
+                  className="ml-auto bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full text-sm"
+                >
+                  Switch to Cart ({cart.length})
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-2">Checkout</h1>
-          <p className="text-black">Review your items and complete your purchase</p>
+          <h1 className="text-4xl font-bold mb-2">
+            {isBuyNowMode ? "Buy Now" : "Checkout"}
+          </h1>
+          <p className="text-black">
+            {isBuyNowMode ? "Complete your purchase" : "Review your items and complete your purchase"}
+          </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -503,12 +612,12 @@ const discountAmountValue = +(subtotal * (discount / 100)).toFixed(2);
               <div className="p-6 border-b border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50">
                 <h2 className="text-xl font-semibold text-orange-900 flex items-center gap-2">
                   <ShoppingBag className="h-5 w-5" />
-                  Cart Items ({cart.length})
+                  {isBuyNowMode ? "Product" : `Cart Items (${displayItems.length})`}
                 </h2>
               </div>
               
               <div className="divide-y divide-orange-100">
-                {cart.map((item) => (
+                {displayItems.map((item) => (
                   <div key={item.id} className="p-6 flex flex-col sm:flex-row items-start gap-4 hover:bg-orange-50/50 transition-colors">
                     <div className="relative w-20 h-20 flex-shrink-0">
                       <Image
@@ -529,6 +638,7 @@ const discountAmountValue = +(subtotal * (discount / 100)).toFixed(2);
                         <button
                           onClick={() => updateQuantity(item, item.quantity - 1)}
                           className="p-2 text-orange-600 hover:bg-orange-50 rounded-l-full transition-colors"
+                          disabled={item.quantity <= 1}
                         >
                           <Minus size={16} />
                         </button>
@@ -546,7 +656,7 @@ const discountAmountValue = +(subtotal * (discount / 100)).toFixed(2);
                       </div>
                       
                       <Button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeItem(item.id)}
                         className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-full shadow-sm transition-all"
                         size="icon"
                       >
@@ -559,18 +669,14 @@ const discountAmountValue = +(subtotal * (discount / 100)).toFixed(2);
             </div>
             
             {/* Delete All Button */}
-            {cart.length > 0 && (
+            {displayItems.length > 0 && (
               <div className="flex justify-end">
                 <Button
-                  onClick={() => {
-                    if (confirm("Are you sure you want to delete all items from the cart?")) {
-                      clearCart();
-                    }
-                  }}
+                  onClick={clearAllItems}
                   className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-4 py-2 rounded-full font-medium shadow-sm transition-all flex items-center gap-2"
                 >
                   <Trash2 size={16} />
-                  Delete All Items
+                  {isBuyNowMode ? "Remove Product" : "Delete All Items"}
                 </Button>
               </div>
             )}
@@ -666,7 +772,6 @@ const discountAmountValue = +(subtotal * (discount / 100)).toFixed(2);
                   Rs {(subtotal + shipping - discountAmount).toFixed(2)}
                 </span>
               </div>
-
 
               <div className="mt-8 space-y-3">
                 <Button
