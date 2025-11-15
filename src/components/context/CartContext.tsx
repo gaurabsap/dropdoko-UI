@@ -20,6 +20,9 @@ type CartContextType = {
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
   cartCount: number;
+  buyNowItem: CartItem | null;
+  setBuyNowProduct: (product: any, quantity?: number) => void;
+  clearBuyNowItem: () => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -27,7 +30,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const [cart, setCart] = useState<CartItem[]>([]);
-
+  const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   // Fetch cart from backend
@@ -59,7 +62,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Add or update quantity
   const addToCart = async (item: { id: string; name: string; price: number; imageUrl: string; quantity?: number }) => {
     const qty = item.quantity ?? 1;
-
+    console.log(item)
     setCart((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
@@ -103,8 +106,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
+    const setBuyNowProduct = (product: any, quantity: number = 1) => {
+    const buyNowProduct: CartItem = {
+      id: product._id || product.id,
+      name: product.name,
+      price: product.price,
+      quantity: quantity,
+      imageUrl: product.imageUrl || product.images?.[0]?.url || ""
+    };
+    setBuyNowItem(buyNowProduct);
+  };
+
+  const clearBuyNowItem = () => {
+    setBuyNowItem(null);
+  };
+
+
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, cartCount }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, cartCount, buyNowItem, setBuyNowProduct, clearBuyNowItem }}>
       {children}
     </CartContext.Provider>
   );
