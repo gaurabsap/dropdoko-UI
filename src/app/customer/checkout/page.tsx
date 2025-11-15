@@ -139,6 +139,10 @@ export default function Checkout() {
   const [selectedAddress, setSelectedAddress] = useState("");
   const [addresses, setAddresses] = useState<any[]>([]);
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0); // percent
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [couponError, setCouponError] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
@@ -153,6 +157,38 @@ export default function Checkout() {
   const [provinceList, setProvinceList] = useState<any[]>([]);
   const [cityList, setCityList] = useState<any[]>([]);
   const [zoneList, setZoneList] = useState<any[]>([]);
+
+
+  const applyCoupon = async () => {
+    try {
+      if (!couponCode) {
+        setCouponError("Please enter a coupon code");
+        return;
+      }
+      const res = await api.post("/coupons/validate", { code: couponCode });
+      console.log(res.data.data)
+      if (res.data?.data.valid && res.data?.data.isActive) {
+        const discountPercent = res.data.data.discount; // e.g., 10 means 10%
+        setDiscount(discountPercent);
+
+        const amount = (subtotal * discountPercent) / 100;
+        setDiscountAmount(amount);
+
+        toast.success(`Coupon applied! You got ${discountPercent}% off`);
+        setCouponError("");
+      } else {
+        setCouponError("Invalid coupon code");
+        setDiscount(0);
+        setDiscountAmount(0);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setCouponError(err?.response?.data?.message || "Coupon not valid");
+      setDiscount(0);
+      setDiscountAmount(0);
+    }
+  };
+
 
   // Fetch addresses
   useEffect(() => {
@@ -331,6 +367,7 @@ export default function Checkout() {
       toast.error("Your cart is empty");
       return;
     }
+    // const totalAfterDiscount = subtotal + shipping - discountAmount;
 
     try {
       // Prepare payload for the backend
@@ -344,7 +381,9 @@ export default function Checkout() {
         })),
         paymentMethod: selectedPayment, // 'cod' or 'fonepay'
         shippingAddressId: selectedAddress,
-        totalAmount: total
+        totalAmount: totalAfterDiscount,
+        couponCode: couponCode || null,
+        discountPercent: discount || null,
       };
 
       // Hit your backend API to create the order
@@ -388,8 +427,9 @@ export default function Checkout() {
   }
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shipping = 5.99;
-  const total = subtotal + shipping
+  const shipping = 110;
+const discountAmountValue = +(subtotal * (discount / 100)).toFixed(2);
+  const totalAfterDiscount = +(subtotal + shipping - discountAmountValue).toFixed(2);
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -592,16 +632,41 @@ export default function Checkout() {
                   <span className="text-orange-700">Subtotal</span>
                   <span className="text-orange-900 font-medium">Rs {subtotal.toFixed(2)}</span>
                 </div>
+
                 <div className="flex justify-between">
                   <span className="text-orange-700">Shipping</span>
                   <span className="text-orange-900 font-medium">Rs {shipping.toFixed(2)}</span>
                 </div>
+
+                {/* Coupon Input */}
+                <div className="mt-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      className="border border-orange-300 rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                    <Button onClick={applyCoupon} className="bg-orange-500 hover:bg-orange-600 text-white px-4">
+                      Apply
+                    </Button>
+                  </div>
+                  {couponError && <p className="text-red-500 text-sm mt-1">{couponError}</p>}
+                  {discount > 0 && (
+                    <p className="text-green-600 text-sm mt-1">Applied: {discount}% off (-Rs {discountAmount.toFixed(2)})</p>
+                  )}
+                </div>
               </div>
-              
+
+              {/* Final Total */}
               <div className="flex justify-between text-lg font-bold mt-4 pt-4 border-t border-orange-200">
                 <span className="text-orange-900">Total</span>
-                <span className="text-orange-600">Rs {total.toFixed(2)}</span>
+                <span className="text-orange-600">
+                  Rs {(subtotal + shipping - discountAmount).toFixed(2)}
+                </span>
               </div>
+
 
               <div className="mt-8 space-y-3">
                 <Button
